@@ -192,10 +192,12 @@ class DDTPConvNetwork(nn.Module):
                                                   self.layers[-2].activations)
         if save_target:
             self.layers[-1].target = output_target
+
+        #TODO: should it start at 0 or 1 ?
         for i in range(self.depth - 1):
             print(f"Depth: {i}")
             h_target = self.propagate_backward(output_target, i)
-            if save_target:
+            if save_target and i > 0:
                 self.layers[i].target = h_target
             if i == 0:
                 self.layers[i].compute_forward_gradients(h_target, self.input,
