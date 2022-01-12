@@ -42,6 +42,10 @@ from tensorboardX import SummaryWriter
 import os.path
 import pickle
 
+#TODO: Local fix for mac
+import os
+
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
 def run():
     """
@@ -58,7 +62,7 @@ def run():
                                                  'target propagation".')
 
     dgroup = parser.add_argument_group('Dataset options')
-    dgroup.add_argument('--dataset', type=str, default='mnist',
+    dgroup.add_argument('--dataset', type=str, default='cifar10',
                         choices=['mnist', 'student_teacher', 'fashion_mnist',
                                  'cifar10'],
                         help='Used dataset for classification/regression. '
@@ -101,15 +105,15 @@ def run():
                         help='Step size for computing the output target based'
                              'on the output gradient. Default: ' +
                              '%(default)s.')
-    tgroup.add_argument('--optimizer', type=str, default='Adam',
+    tgroup.add_argument('--optimizer', type=str, default='SGD',
                         choices=['SGD', 'RMSprop', 'Adam'],
                         help='Optimizer used for training. Default: '
                              '%(default)s.')
-    tgroup.add_argument('--optimizer_fb', type=str, default=None,
+    tgroup.add_argument('--optimizer_fb', type=str, default='SGD',
                         choices=[None, 'SGD', 'RMSprop', 'Adam'],
                         help='Optimizer used for training the feedback '
                              'parameters.')
-    tgroup.add_argument('--momentum', type=float, default=0.0,
+    tgroup.add_argument('--momentum', type=float, default=0.9,
                         help='Momentum of the SGD or RMSprop optimizer. ' +
                              'Default: %(default)s.')
     tgroup.add_argument('--sigma', type=float, default=0.08,
@@ -262,7 +266,7 @@ def run():
                              '(student) network. Default: %(default)s.'
                              'If you provide a list, you can have layers of '
                              'different sizes.')
-    sgroup.add_argument('--size_input', type=int, metavar='N', default=784,
+    sgroup.add_argument('--size_input', type=int, metavar='N', default=3072,
                         help='Number of units of the input'
                              '. Default: %(default)s.')
     sgroup.add_argument('--size_output', type=int, metavar='N', default=10,
@@ -277,7 +281,7 @@ def run():
                                  'sigmoid'],
                         help='Activation function used for the hidden layers. '
                              'Default: $(default)s.')
-    sgroup.add_argument('--output_activation', type=str, default=None,
+    sgroup.add_argument('--output_activation', type=str, default='softmax',
                         choices=['tanh', 'relu', 'linear', 'leakyrelu',
                                  'sigmoid', 'softmax'],
                         help='Activation function used for the output. '
@@ -290,7 +294,7 @@ def run():
                              'hidden_activation.')
     sgroup.add_argument('--no_bias', action='store_true',
                         help='Flag for not using biases in the network.')
-    sgroup.add_argument('--network_type', type=str, default='DKDTP',
+    sgroup.add_argument('--network_type', type=str, default='DDTPConvCIFAR',
                         choices=['DTP', 'LeeDTP',
                                  'DTPDR', 'DKDTP2',
                                  'DMLPDTP2',
@@ -301,7 +305,7 @@ def run():
                         help='Variant of TP that will be used to train the '
                              'network. See the layer classes for explanations '
                              'of the names. Default: %(default)s.')
-    sgroup.add_argument('--initialization', type=str, default='xavier',
+    sgroup.add_argument('--initialization', type=str, default='xavier_normal',
                         choices=['orthogonal', 'xavier', 'xavier_normal',
                                  'teacher'],
                         help='Type of initialization that will be used for the '
@@ -732,6 +736,9 @@ def run():
 
     ### Train network
     print("train")
+    import time
+    start_time = time.time()
+
     if not args.network_type in ('BP', 'BPConv'):
         summary = train(args=args,
                         device=device,
@@ -751,6 +758,7 @@ def run():
                            summary=summary,
                            val_loader=val_loader)
 
+    training_time= time.time() - start_time
     if (args.plots is not None and args.network_type != 'BP'):
         summary['bp_activation_angles'] = net.bp_activation_angles
         summary['gn_activation_angles'] = net.gn_activation_angles
@@ -763,6 +771,7 @@ def run():
     if summary['finished'] == 0:
         # if no error code in finished, put it on 1 to indicate succesful run
         summary['finished'] = 1
+        summary['training_time'] = training_time
         utils.save_summary_dict(args, summary)
     if writer is not None:
         writer.close()

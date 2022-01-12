@@ -633,6 +633,27 @@ def compute_angle(A, B):
         print(cosine)
     return angle
 
+def compute_distance(A, B):
+    """
+     Compute the angle between two tensors of the same size. The tensors will
+     be flattened, after which the angle is computed.
+    Args:
+        A (torch.Tensor): First tensor
+        B (torch.Tensor): Second tensor
+
+    Returns: The angle between the two tensors in degrees
+
+    """
+    if contains_nan(A):
+        print('tensor A contains nans:')
+        print(A)
+    if contains_nan(B):
+        print('tensor B contains nans:')
+        print(B)
+
+    dist = torch.sqrt(((A - B) ** 2).sum() / (A ** 2).sum())
+
+    return dist.item()
 
 def compute_average_batch_angle(A, B):
     """
@@ -672,6 +693,35 @@ def compute_average_batch_angle(A, B):
     cosines = torch.min(cosines, torch.ones_like(cosines))
     angles = torch.acos(cosines)
     return 180/np.pi*torch.mean(angles)
+
+
+def compute_average_batch_distance(A, B):
+    """
+    Compute the average of the angles between the mini-batch samples of A and B.
+    If the samples of the mini-batch have more than one dimension (minibatch
+    dimension not included), the tensors will first be flattened
+    Args:
+        A (torch.Tensor):  A tensor with as first dimension the mini-batch
+            dimension
+        B (torch.Tensor): A tensor of the same shape as A
+
+    Returns: The average angle between the two tensors in degrees.
+
+    """
+
+    A = A.flatten(1, -1)
+    B = B.flatten(1, -1)
+    if contains_nan(A):
+        print('tensor A contains nans in activation angles:')
+        print(A)
+    if contains_nan(B):
+        print('tensor B contains nans in activation angles:')
+        print(B)
+
+
+    dist = torch.sqrt(((A - B) ** 2).sum() / (A ** 2).sum())
+
+    return dist
 
 
 class NetworkError(Exception):

@@ -84,13 +84,23 @@ class DDTPConvNetwork(nn.Module):
         if plots is not None:
             self.bp_angles = pd.DataFrame(
                 columns=[i for i in range(0, self._depth)])
+            self.bp_distances = pd.DataFrame(
+                columns=[i for i in range(0, self._depth)])
             self.gn_angles = pd.DataFrame(
+                columns=[i for i in range(0, self._depth)])
+            self.gn_distances = pd.DataFrame(
                 columns=[i for i in range(0, self._depth)])
             self.gnt_angles = pd.DataFrame(
                 columns=[i for i in range(0, self._depth)])
+            self.gnt_distances = pd.DataFrame(
+                columns=[i for i in range(0, self._depth)])
             self.bp_activation_angles = pd.DataFrame(
                 columns=[i for i in range(0, self._depth)])
+            self.bp_activation_distances = pd.DataFrame(
+                columns=[i for i in range(0, self._depth)])
             self.gn_activation_angles = pd.DataFrame(
+                columns=[i for i in range(0, self._depth)])
+            self.gn_activation_distances = pd.DataFrame(
                 columns=[i for i in range(0, self._depth)])
 
             self.reconstruction_loss_init = pd.DataFrame(
@@ -191,16 +201,14 @@ class DDTPConvNetwork(nn.Module):
         self.layers[-1].compute_forward_gradients(output_target,
                                                   self.layers[-2].activations)
         if save_target:
+            print(f"output target: {output_target}")
             self.layers[-1].target = output_target
 
-        #TODO: should it start at 0 or 1 ?
+
         for i in range(self.depth - 1):
-            print(f"Depth: {i}")
             h_target = self.propagate_backward(output_target, i)
-            print(f"h_target, shape: {h_target}, {h_target.shape}")
             if save_target:
-                print(f"Target in self.layers[i]: {self.layers[i].target}")
-                self.layers[i].target = h_target
+                self.layers[i]._target = h_target
             if i == 0:
                 self.layers[i].compute_forward_gradients(h_target, self.input,
                                                          self.forward_requires_grad)
@@ -278,7 +286,7 @@ class DDTPConvNetwork(nn.Module):
             reconstruction_loss
         return reconstruction_loss
 
-    def compute_bp_angles(self, loss, i, retain_graph=False):
+    def compute_bp_angles_and_distance(self, loss, i, retain_graph=False):
         """
         Compute the angles of the current forward parameter updates of layer i
         with the backprop update for those parameters.
@@ -315,12 +323,16 @@ class DDTPConvNetwork(nn.Module):
 
         weights_angle = utils.compute_angle(bp_gradients[0].detach(),
                                             gradients[0])
+        weights_distance = utils.compute_distance(bp_gradients[0].detach(),
+                                                  gradients[0])
         if self.layers[i].bias is not None:
             bias_angle = utils.compute_angle(bp_gradients[1].detach(),
                                              gradients[1])
-            return (weights_angle, bias_angle)
+            bias_distance = utils.compute_distance(bp_gradients[1].detach(),
+                                                      gradients[1])
+            return (weights_angle, bias_angle), (weights_distance, bias_distance)
         else:
-            return (weights_angle, )
+            return (weights_angle, ), (weights_distance, )
 
     def save_bp_angles(self, writer, step, loss, retain_graph=False):
 
@@ -333,15 +345,22 @@ class DDTPConvNetwork(nn.Module):
                 retain_graph_flag = True
             else:
                 retain_graph_flag = retain_graph
-            angles = self.compute_bp_angles(loss, i, retain_graph_flag)
+            angles, distances = self.compute_bp_angles_and_distance(loss, i, retain_graph_flag)
             writer.add_scalar(
                 tag='{}/weight_bp_angle'.format(name),
                 scalar_value=angles[0],
                 global_step=step
             )
 
+            writer.add_scalar(
+                tag='{}/weight_bp_distance'.format(name),
+                scalar_value=distances[0],
+                global_step=step
+            )
+
             if self._plots is not None:
                 self.bp_angles.at[step, i] = angles[0].item()
+                self.bp_distances.at[step, i] = distances[0].item()
 
 
             if self.layers[i].bias is not None:
@@ -350,6 +369,7 @@ class DDTPConvNetwork(nn.Module):
                     scalar_value=angles[1],
                     global_step=step
                 )
+
     def save_bp_activation_angle(self, writer, step, loss,
                                  retain_graph=False):
         """
@@ -385,8 +405,8 @@ class DDTPConvNetwork(nn.Module):
                 retain_graph_flag = True
             else:
                 retain_graph_flag = retain_graph
-            angle = self.compute_bp_activation_angle(loss, i,
-                                                      retain_graph_flag)
+            angle, distance = self.compute_bp_activation_angle_and_distance(loss, i,
+                                                                            retain_graph_flag)
 
 
             writer.add_scalar(
@@ -394,58 +414,54 @@ class DDTPConvNetwork(nn.Module):
                 scalar_value=angle,
                 global_step=step
             )
+            writer.add_scalar(
+                tag='{}/activation_bp_distance'.format(name),
+                scalar_value=distance,
+                global_step=step
+            )
             if self._plots is not None:
                 self.bp_activation_angles.at[step, i] = angle.item()
+                self.bp_activation_distances.at[step, i] = distance.item()
         return
 
-    # layer_indices = range(len(self.layers) - 1)
-    #
-    # # assign a damping constant for each layer for computing the gnt angles
-    # if isinstance(damping, float):
-    #     damping = [damping for i in range(self.depth)]
-    # else:
-    #     # print(damping)
-    #     # print(len(damping))
-    #     # print(layer_indices)
-    #     # print(len(layer_indices))
-    #     assert len(damping) == len(layer_indices)
-    #
-    # for i in layer_indices:
-    #     name = 'layer {}'.format(i + 1)
-    #     if i != layer_indices[-1]:  # if it is not the last index, the graph
-    #         # should be saved for the next index
-    #         retain_graph_flag = True
-    #     else:
-    #         retain_graph_flag = retain_graph
-    #     angles = self.compute_gnt_angle(output_activation=output_activation,
-    #                                     loss=loss,
-    #                                     damping=damping[i],
-    #                                     i=i,
-    #                                     step=step,
-    #                                     retain_graph=retain_graph_flag)
-    #     if custom_result_df is not None:
-    #         custom_result_df.at[step, i] = angles[0].item()
-    #     else:
-    #         writer.add_scalar(
-    #             tag='{}/weight_gnt_angle'.format(name),
-    #             scalar_value=angles[0],
-    #             global_step=step
-    #         )
-    #
-    #         if self._plots is not None:
-    #             # print('saving gnt angles')
-    #             # print(angles[0].item())
-    #             self.gnt_angles.at[step, i] = angles[0].item()
-    #
-    #         if self.layers[i].bias is not None:
-    #             writer.add_scalar(
-    #                 tag='{}/bias_gnt_angle'.format(name),
-    #                 scalar_value=angles[1],
-    #                 global_step=step
-    #             )
+    def compute_bp_activation_angle_and_distance(self, loss, i, retain_graph=False,
+                                    linear=False):
+        """
+        Compute the angle between the difference between the target and layer
+        activation and the backpropagation update for the layers activation
+        Args:
+            loss (torch.Tensor): the loss value of the current minibatch.
+            i (int): layer index
+            retain_graph (bool): flag indicating whether the graph of the
+                network should be retained after computing the gradients or
+                jacobians. If the graph will not be used anymore for the current
+                minibatch afterwards, retain_graph should be False.
+            linear (bool): Flag indicating whether the GN update for the
+                linear activations should be computed instead of for the
+                nonlinear activations.
 
+        Returns : The average angle in degrees
+        """
+        if linear:
+            target_difference = self.layers[i].linearactivations - \
+                                self.layers[i].target
+        else:
+            target_difference = self.layers[i].activations - \
+                                self.layers[i].target
+        bp_updates = self.layers[i].compute_bp_activation_updates(
+            loss=loss,
+            retain_graph=retain_graph,
+            linear=linear
+        ).detach()
 
-    def compute_gnt_angle(self, output_activation, loss, damping,
+        angle = utils.compute_average_batch_angle(target_difference.detach(),
+                                                  bp_updates)
+        distance = utils.compute_average_batch_distance(target_difference.detach(),
+                                                        bp_updates)
+
+        return angle, distance
+
+    def compute_gnt_angle_and_distance(self, output_activation, loss, damping,
                           i, step, retain_graph=False, linear=False):
         if i == 0:
             h_previous = self.input
@@ -466,12 +482,15 @@ class DDTPConvNetwork(nn.Module):
 
         gradients = self.layers[i].get_forward_gradients()
         weights_angle = utils.compute_angle(gnt_updates[0], gradients[0])
+        weights_distance = utils.compute_distance(gnt_updates[0], gradients[0])
         if self.layers[i].bias is not None:
             bias_angle = utils.compute_angle(gnt_updates[1], gradients[1])
-            return (weights_angle, bias_angle)
+            bias_distance = utils.compute_distance(gnt_updates[1], gradients[1])
+            return (weights_angle, bias_angle), (weights_distance, bias_distance)
         else:
-            return (weights_angle, )
+            return (weights_angle, ), (weights_distance, )
 
+    #TODO: will break
     def save_gnt_angles(self, writer, step, output_activation, loss,
                         damping, retain_graph=False, custom_result_df=None):
 
@@ -494,7 +513,7 @@ class DDTPConvNetwork(nn.Module):
                 retain_graph_flag = True
             else:
                 retain_graph_flag = retain_graph
-            angles = self.compute_gnt_angle(output_activation=output_activation,
+            angles, distances = self.compute_gnt_angle_and_distance(output_activation=output_activation,
                                             loss=loss,
                                             damping=damping[i],
                                             i=i,
@@ -502,6 +521,7 @@ class DDTPConvNetwork(nn.Module):
                                             retain_graph=retain_graph_flag)
             if custom_result_df is not None:
                 custom_result_df.at[step,i] = angles[0].item()
+                custom_result_df.at[step,i] = distances[0].item()
             else:
                 writer.add_scalar(
                     tag='{}/weight_gnt_angle'.format(name),
@@ -569,13 +589,23 @@ class DDTPConvNetworkCIFAR(DDTPConvNetwork):
         if plots is not None:
             self.bp_angles = pd.DataFrame(
                 columns=[i for i in range(0, self._depth)])
+            self.bp_distances = pd.DataFrame(
+                columns=[i for i in range(0, self._depth)])
             self.gn_angles = pd.DataFrame(
+                columns=[i for i in range(0, self._depth)])
+            self.gn_distances = pd.DataFrame(
                 columns=[i for i in range(0, self._depth)])
             self.gnt_angles = pd.DataFrame(
                 columns=[i for i in range(0, self._depth)])
+            self.gnt_distances = pd.DataFrame(
+                columns=[i for i in range(0, self._depth)])
             self.bp_activation_angles = pd.DataFrame(
                 columns=[i for i in range(0, self._depth)])
+            self.bp_activation_distances = pd.DataFrame(
+                columns=[i for i in range(0, self._depth)])
             self.gn_activation_angles = pd.DataFrame(
+                columns=[i for i in range(0, self._depth)])
+            self.gn_activation_distances = pd.DataFrame(
                 columns=[i for i in range(0, self._depth)])
 
             self.reconstruction_loss_init = pd.DataFrame(
