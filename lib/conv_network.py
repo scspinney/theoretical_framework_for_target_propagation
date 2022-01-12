@@ -233,7 +233,6 @@ class DDTPConvNetwork(nn.Module):
                                                   output_corrupted,
                                                   output_noncorrupted,
                                                   self.sigma)
-
     def get_forward_parameter_list(self):
         parameterlist = []
         for layer in self.layers:
@@ -521,7 +520,7 @@ class DDTPConvNetwork(nn.Module):
                                             retain_graph=retain_graph_flag)
             if custom_result_df is not None:
                 custom_result_df.at[step,i] = angles[0].item()
-                custom_result_df.at[step,i] = distances[0].item()
+                #custom_result_df.at[step,i] = distances[0].item()
             else:
                 writer.add_scalar(
                     tag='{}/weight_gnt_angle'.format(name),
@@ -529,15 +528,27 @@ class DDTPConvNetwork(nn.Module):
                     global_step=step
                 )
 
+                writer.add_scalar(
+                    tag='{}/weight_gnt_distance'.format(name),
+                    scalar_value=distances[0],
+                    global_step=step
+                )
+
                 if self._plots is not None:
                     # print('saving gnt angles')
                     # print(angles[0].item())
                     self.gnt_angles.at[step, i] = angles[0].item()
+                    self.gnt_distances.at[step, i] = distances[0].item()
 
                 if self.layers[i].bias is not None:
                     writer.add_scalar(
                         tag='{}/bias_gnt_angle'.format(name),
                         scalar_value=angles[1],
+                        global_step=step
+                    )
+                    writer.add_scalar(
+                        tag='{}/bias_gnt_distance'.format(name),
+                        scalar_value=distances[1],
                         global_step=step
                     )
 
