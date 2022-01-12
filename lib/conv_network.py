@@ -195,12 +195,9 @@ class DDTPConvNetwork(nn.Module):
 
         #TODO: should it start at 0 or 1 ?
         for i in range(self.depth - 1):
-            print(f"Depth: {i}")
             h_target = self.propagate_backward(output_target, i)
-            print(f"h_target, shape: {h_target}, {h_target.shape}")
             if save_target:
-                print(f"Target in self.layers[i]: {self.layers[i].target}")
-                self.layers[i].target = h_target
+                self.layers[i]._target = h_target
             if i == 0:
                 self.layers[i].compute_forward_gradients(h_target, self.input,
                                                          self.forward_requires_grad)
