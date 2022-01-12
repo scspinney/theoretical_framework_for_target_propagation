@@ -193,6 +193,7 @@ class DDTPConvNetwork(nn.Module):
         if save_target:
             self.layers[-1].target = output_target
         for i in range(self.depth - 1):
+            print(f"Depth: {i}")
             h_target = self.propagate_backward(output_target, i)
             if save_target:
                 self.layers[i].target = h_target
@@ -345,6 +346,100 @@ class DDTPConvNetwork(nn.Module):
                     scalar_value=angles[1],
                     global_step=step
                 )
+    def save_bp_activation_angle(self, writer, step, loss,
+                                 retain_graph=False):
+        """
+        Save the angle between the difference between the target and layer
+        activation and the backpropagation update for the layers activation
+        Args:
+            writer (SummaryWriter): summary writer from tensorboardX
+            step (int): the global step used for the x-axis of the plots
+            see lib.dtp_layers.DTPLayer.compute_bp_activation_updates(...)
+            retain_graph (bool): flag indicating whether the graph of the
+                network should be retained after computing the gradients or
+                jacobians. If the graph will not be used anymore for the current
+                minibatch afterwards, retain_graph should be False.
+        """
+        layer_indices = range(len(self.layers) - 1)
+
+        #TODO: should this be included i.e. the damping constant?
+
+        # # assign a damping constant for each layer for computing the gnt angles
+        # if isinstance(damping, float):
+        #     damping = [damping for i in range(self.depth)]
+        # else:
+        #     # print(damping)
+        #     # print(len(damping))
+        #     # print(layer_indices)
+        #     # print(len(layer_indices))
+        #     assert len(damping) == len(layer_indices)
+
+        for i in layer_indices:
+            name = 'layer {}'.format(i + 1)
+            if i != layer_indices[-1]:  # if it is not the last index, the graph
+                # should be saved for the next index
+                retain_graph_flag = True
+            else:
+                retain_graph_flag = retain_graph
+            angle = self.compute_bp_activation_angle(loss, i,
+                                                      retain_graph_flag)
+
+
+            writer.add_scalar(
+                tag='{}/activation_bp_angle'.format(name),
+                scalar_value=angle,
+                global_step=step
+            )
+            if self._plots is not None:
+                self.bp_activation_angles.at[step, i] = angle.item()
+        return
+
+    # layer_indices = range(len(self.layers) - 1)
+    #
+    # # assign a damping constant for each layer for computing the gnt angles
+    # if isinstance(damping, float):
+    #     damping = [damping for i in range(self.depth)]
+    # else:
+    #     # print(damping)
+    #     # print(len(damping))
+    #     # print(layer_indices)
+    #     # print(len(layer_indices))
+    #     assert len(damping) == len(layer_indices)
+    #
+    # for i in layer_indices:
+    #     name = 'layer {}'.format(i + 1)
+    #     if i != layer_indices[-1]:  # if it is not the last index, the graph
+    #         # should be saved for the next index
+    #         retain_graph_flag = True
+    #     else:
+    #         retain_graph_flag = retain_graph
+    #     angles = self.compute_gnt_angle(output_activation=output_activation,
+    #                                     loss=loss,
+    #                                     damping=damping[i],
+    #                                     i=i,
+    #                                     step=step,
+    #                                     retain_graph=retain_graph_flag)
+    #     if custom_result_df is not None:
+    #         custom_result_df.at[step, i] = angles[0].item()
+    #     else:
+    #         writer.add_scalar(
+    #             tag='{}/weight_gnt_angle'.format(name),
+    #             scalar_value=angles[0],
+    #             global_step=step
+    #         )
+    #
+    #         if self._plots is not None:
+    #             # print('saving gnt angles')
+    #             # print(angles[0].item())
+    #             self.gnt_angles.at[step, i] = angles[0].item()
+    #
+    #         if self.layers[i].bias is not None:
+    #             writer.add_scalar(
+    #                 tag='{}/bias_gnt_angle'.format(name),
+    #                 scalar_value=angles[1],
+    #                 global_step=step
+    #             )
+
 
     def compute_gnt_angle(self, output_activation, loss, damping,
                           i, step, retain_graph=False, linear=False):
