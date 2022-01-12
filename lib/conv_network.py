@@ -201,7 +201,6 @@ class DDTPConvNetwork(nn.Module):
         self.layers[-1].compute_forward_gradients(output_target,
                                                   self.layers[-2].activations)
         if save_target:
-            print(f"output target: {output_target}")
             self.layers[-1].target = output_target
 
 
