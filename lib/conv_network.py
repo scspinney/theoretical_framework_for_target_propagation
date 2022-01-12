@@ -197,7 +197,8 @@ class DDTPConvNetwork(nn.Module):
         for i in range(self.depth - 1):
             print(f"Depth: {i}")
             h_target = self.propagate_backward(output_target, i)
-            if save_target and i > 0:
+            print(f"h_target, shape: {h_target}, {h_target.shape}")
+            if save_target:
                 self.layers[i].target = h_target
             if i == 0:
                 self.layers[i].compute_forward_gradients(h_target, self.input,
