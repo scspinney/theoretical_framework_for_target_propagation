@@ -390,6 +390,32 @@ class DDTPConvLayer(nn.Module):
                                             retain_graph=retain_graph)
             return gnt_grads
 
+    def compute_bp_activation_updates(self, loss, retain_graph=False,
+                                      linear=False):
+        """ Compute the error backpropagation teaching signal for the
+        activations of this layer, based on the given loss.
+        Args:
+            loss (nn.Module): network loss
+            retain_graph (bool): flag indicating whether the graph of the
+                network should be retained after computing the gradients or
+                jacobians. If the graph will not be used anymore for the current
+                minibatch afterwards, retain_graph should be False.
+            linear (bool): Flag indicating whether the GN update for the
+                linear activations should be computed instead of for the
+                nonlinear activations.
+        Returns (torch.Tensor): A tensor containing the BP updates for the layer
+            activations for the current mini-batch.
+
+                """
+
+        if linear:
+            activations = self.linearactivations
+        else:
+            activations = self.activations
+        grads = torch.autograd.grad(loss, activations,
+                                    retain_graph=retain_graph)[0].detach()
+        return grads
+
     def get_forward_gradients(self):
         """ Return a tuple containing the gradients of the forward
         parameters."""
