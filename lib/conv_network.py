@@ -417,7 +417,7 @@ class DDTPConvNetwork(nn.Module):
 
         # only do this for the last layer (linear)
         # should this be the last two MLP layers?
-        last_layer_index = len(self.layers) - 2
+        last_layer_index = len(self.layers) - 3
         last_layer = self.layers[last_layer_index]
         name = 'layer {}'.format(last_layer_index + 1)
 
