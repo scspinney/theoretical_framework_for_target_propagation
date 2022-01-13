@@ -353,7 +353,7 @@ class DDTPConvNetwork(nn.Module):
         """
         forward_weights = self.layers[i].weights.detach()
         #forward_bias = self.layers[i].bias
-        transpose_feedback_weights = self.layers[i-1].feedbackweights.t()
+        transpose_feedback_weights = self.layers[i].feedbackweights.t()
 
         print(f"Forward weight shape: {forward_weights.shape}")
         print(f"Transpose feedback weight shape: {transpose_feedback_weights.shape}")
@@ -417,7 +417,7 @@ class DDTPConvNetwork(nn.Module):
 
         # only do this for the last layer (linear)
         # should this be the last two MLP layers?
-        last_layer_index = len(self.layers) - 3
+        last_layer_index = len(self.layers) - 1
         last_layer = self.layers[last_layer_index]
         name = 'layer {}'.format(last_layer_index + 1)
 
