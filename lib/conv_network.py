@@ -334,6 +334,44 @@ class DDTPConvNetwork(nn.Module):
         else:
             return (weights_angle, ), (weights_distance, )
 
+    def compute_weight_angles_and_distance(self, i, retain_graph=False):
+        """
+        Compute the angles of the current forward parameter updates of layer i
+        with the tranpose feedback layer for those parameters.
+        Args:
+            loss (torch.Tensor): the loss value of the current minibatch.
+            i (int): layer index
+            retain_graph (bool): flag indicating whether the graph of the
+                network should be retained after computing the gradients or
+                jacobians. If the graph will not be used anymore for the current
+                minibatch afterwards, retain_graph should be False.
+
+        Returns (tuple): Tuple containing the angle in degrees between the
+            updates for the forward weights at index 0 and the forward bias
+            at index 1 (if bias is not None).
+
+        """
+        forward_weights = self.layers[i].weights
+        #forward_bias = self.layers[i].bias
+        transpose_feedback_weights = self.layers[i].feedbackweights
+
+        print(f"Forward weight shape: {forward_weights}")
+        print(f"Transpose feedback weight shape: {transpose_feedback_weights}")
+
+
+        weights_angle = utils.compute_angle(transpose_feedback_weights,
+                                            forward_weights)
+        weights_distance = utils.compute_distance(transpose_feedback_weights,
+                                            forward_weights, False)
+        # if self.layers[i].bias is not None:
+        #     bias_angle = utils.compute_angle(bp_gradients[1].detach(),
+        #                                      gradients[1])
+        #     bias_distance = utils.compute_distance(bp_gradients[1].detach(),
+        #                                               gradients[1], True)
+        #     return (weights_angle, bias_angle), (weights_distance, bias_distance)
+        # else:
+        return (weights_angle, ), (weights_distance, )
+
     def save_bp_angles(self, writer, step, loss, retain_graph=False):
 
         layer_indices = range(len(self.layers))
@@ -369,6 +407,49 @@ class DDTPConvNetwork(nn.Module):
                     scalar_value=angles[1],
                     global_step=step
                 )
+                writer.add_scalar(
+                    tag='{}/bias_bp_distance'.format(name),
+                    scalar_value=distances[1],
+                    global_step=step
+                )
+
+    def save_weight_angles(self, writer, step, loss, retain_graph=False):
+
+        # only do this for the last layer (linear)
+        last_layer_index = len(self.layers) -1
+        last_layer = self.layers[last_layer_index]
+        name = 'layer {}'.format(last_layer_index + 1)
+
+        angles, distances = self.compute_weight_angles_and_distance(last_layer_index, retain_graph_flag=False)
+        writer.add_scalar(
+            tag='{}/weight_angle'.format(name),
+            scalar_value=angles[0],
+            global_step=step
+        )
+
+
+        writer.add_scalar(
+            tag='{}/weight_distance'.format(name),
+            scalar_value=distances[0],
+            global_step=step
+        )
+
+        if self._plots is not None:
+            self.angles.at[step, last_layer_index] = angles[0].item()
+            self.distances.at[step, last_layer_index] = distances[0].item()
+
+
+        if self.layers[last_layer_index].bias is not None:
+            writer.add_scalar(
+                tag='{}/bias_angle'.format(name),
+                scalar_value=angles[1],
+                global_step=step
+            )
+            writer.add_scalar(
+                tag='{}/bias_distance'.format(name),
+                scalar_value=distances[1],
+                global_step=step
+            )
 
     def save_bp_activation_angle(self, writer, step, loss,
                                  retain_graph=False):
@@ -421,7 +502,7 @@ class DDTPConvNetwork(nn.Module):
             )
             if self._plots is not None:
                 self.bp_activation_angles.at[step, i] = angle.item()
-                self.bp_activation_distances.at[step, i] = distance.item()
+                self.bp_activation_distances.at[step, i] = distance
         return
 
     def compute_bp_activation_angle_and_distance(self, loss, i, retain_graph=False,
