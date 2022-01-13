@@ -617,6 +617,8 @@ class DTPConvLayer(nn.Module):
 
     def compute_forward_gradients(self, h_target, h_previous,
                                   forward_requires_grad=False):
+        print(f"self.activations shape: {self.activations.shape}")
+        print(f"h_target shape: {h_target.shape}")
         local_loss = F.mse_loss(self.activations, h_target.detach())
         if self.bias is not None:
             grads = torch.autograd.grad(local_loss, [self.weights, self.bias],
