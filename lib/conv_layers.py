@@ -256,20 +256,19 @@ class DDTPConvLayer(nn.Module):
                               global_step=step)
         if not no_fb_param:
             feedback_weights_norm = torch.norm(self.feedbackweights)
-            forward_weights_norm = torch.norm(self.weights)
             print(self.feedbackweights.shape)
             print(self.weights.shape)
-            dist = utils.compute_distance(self.feedbackweights, self.weights, is_gradient=False)
-            angle = utils.compute_angle(self.feedbackweights, self.weights)
+            # dist = utils.compute_distance(self.feedbackweights, self.weights, is_gradient=False)
+            # angle = utils.compute_angle(self.feedbackweights, self.weights)
             writer.add_scalar(tag='{}/feedback_weights_norm'.format(name),
                               scalar_value=feedback_weights_norm,
                               global_step=step)
-            writer.add_scalar(tag='{}/forward_feedback_dist'.format(name),
-                              scalar_value=dist,
-                              global_step=step)
-            writer.add_scalar(tag='{}/forward_feedback_angle'.format(name),
-                              scalar_value=angle,
-                              global_step=step)
+            # writer.add_scalar(tag='{}/forward_feedback_dist'.format(name),
+            #                   scalar_value=dist,
+            #                   global_step=step)
+            # writer.add_scalar(tag='{}/forward_feedback_angle'.format(name),
+            #                   scalar_value=angle,
+            #                   global_step=step)
 
             if not no_gradient and self.feedbackweights.grad is not None:
                 feedback_weights_gradients_norm = torch.norm(
@@ -602,6 +601,8 @@ class DTPConvLayer(nn.Module):
     def propagate_backward(self, output_target):
         h = output_target.mm(self.feedbackweights.t())
         h = self.feedback_activationfunction(h)
+        print(f"Propogate backward is of shape: {torch.reshape(h, [output_target.shape[0]] + self._feature_size).shape}")
+        print(f"Weights at layer are of shape : {self.weights.shape}")
         return torch.reshape(h, [output_target.shape[0]] + self._feature_size)
 
     def backward(self, output_target, layer_activation, output_activation):
