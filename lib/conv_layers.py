@@ -184,6 +184,9 @@ class DDTPConvLayer(nn.Module):
         h = output_target.mm(self.feedbackweights.t())
 
         h = self.feedback_activationfunction(h)
+        print(
+            f"Propogate backward is of shape: {torch.reshape(h, [output_target.shape[0]] + self._feature_size).shape}")
+        print(f"Weights at layer are of shape : {self.weights.shape}")
         return torch.reshape(h, [output_target.shape[0]] + self._feature_size)
 
     def backward(self, output_target, layer_activation, output_activation):
@@ -257,6 +260,7 @@ class DDTPConvLayer(nn.Module):
         if not no_fb_param:
             feedback_weights_norm = torch.norm(self.feedbackweights)
             print(self.feedbackweights.shape)
+            #reshaped = torch.reshape(self.feedbackweights, [output_target.shape[0]] + self._feature_size)
             print(self.weights.shape)
             # dist = utils.compute_distance(self.feedbackweights, self.weights, is_gradient=False)
             # angle = utils.compute_angle(self.feedbackweights, self.weights)
