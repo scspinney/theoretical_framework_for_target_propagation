@@ -351,12 +351,12 @@ class DDTPConvNetwork(nn.Module):
             at index 1 (if bias is not None).
 
         """
-        forward_weights = self.layers[i].weights
+        forward_weights = self.layers[i].weights.detach()
         #forward_bias = self.layers[i].bias
-        transpose_feedback_weights = self.layers[i]._feedbackweights
+        transpose_feedback_weights = self.layers[i].feedbackweights
 
-        print(f"Forward weight shape: {forward_weights}")
-        print(f"Transpose feedback weight shape: {transpose_feedback_weights}")
+        print(f"Forward weight shape: {forward_weights.shape}")
+        print(f"Transpose feedback weight shape: {transpose_feedback_weights.shape}")
 
 
         weights_angle = utils.compute_angle(transpose_feedback_weights,
@@ -416,7 +416,8 @@ class DDTPConvNetwork(nn.Module):
     def save_weight_angles(self, writer, step, loss, retain_graph=False):
 
         # only do this for the last layer (linear)
-        last_layer_index = len(self.layers) -1
+        # should this be the last two MLP layers?
+        last_layer_index = len(self.layers) - 2
         last_layer = self.layers[last_layer_index]
         name = 'layer {}'.format(last_layer_index + 1)
 
