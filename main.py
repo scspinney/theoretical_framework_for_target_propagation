@@ -759,7 +759,8 @@ def run():
                            val_loader=val_loader)
 
     training_time= time.time() - start_time
-    if (args.plots is not None and args.network_type != 'BP'):
+    #if (args.plots is not None and args.network_type != 'BP'):
+    if args.network_type != 'BP':
         summary['bp_activation_angles'] = net.bp_activation_angles
         summary['gn_activation_angles'] = net.gn_activation_angles
         summary['bp_angles'] = net.bp_angles
