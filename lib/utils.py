@@ -419,6 +419,8 @@ def save_forward_batch_logs(args, writer, step, net, loss, output_activation):
         output_activation (torch.Tensor): output of the network for the current
             minibatch
     """
+
+    net.save_weight_angles(writer, step, loss, retain_graph)
     if args.save_BP_angle:
         retain_graph = args.save_GN_angle or args.save_GN_activations_angle or \
             args.save_BP_activations_angle or args.save_GNT_angle or \

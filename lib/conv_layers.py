@@ -60,6 +60,8 @@ class DDTPConvLayer(nn.Module):
         self._feedback_activation = feedback_activation
         self._target = None
         self._feature_size = feature_size
+        self._forward_feedback_angle = None # average batch forward/transpose feedback angle
+        self._forward_feedback_distance = None  # average batch forward/transpose feedback distance
 
     def construct_pool_layer(self, pool_type, kernel_size, stride, padding, dilation):
         if pool_type == 'max':
@@ -184,9 +186,9 @@ class DDTPConvLayer(nn.Module):
         h = output_target.mm(self.feedbackweights.t())
 
         h = self.feedback_activationfunction(h)
-        print(
-            f"Propogate backward is of shape: {torch.reshape(h, [output_target.shape[0]] + self._feature_size).shape}")
-        print(f"Weights at layer are of shape : {self.weights.shape}")
+        #print(
+         #   f"Propogate backward is of shape: {torch.reshape(h, [output_target.shape[0]] + self._feature_size).shape}")
+        #print(f"Weights at layer are of shape : {self.weights.shape}")
         return torch.reshape(h, [output_target.shape[0]] + self._feature_size)
 
     def backward(self, output_target, layer_activation, output_activation):
@@ -208,6 +210,8 @@ class DDTPConvLayer(nn.Module):
             grads = torch.autograd.grad(local_loss, self.weights,
                                         retain_graph=forward_requires_grad)
         self._conv_layer.weight.grad = grads[0].detach()
+        self._forward_feedback_distance = utils.compute_average_batch_distance(h_target,self.activations, is_gradient=False)
+        self._forward_feedback_angle = utils.compute_average_batch_angle(h_target,self.activations)
 
     def set_feedback_requires_grad(self, value):
         if not isinstance(value, bool):
@@ -243,6 +247,9 @@ class DDTPConvLayer(nn.Module):
         writer.add_scalar(tag='{}/forward_weights_norm'.format(name),
                           scalar_value=forward_weights_norm,
                           global_step=step)
+
+        # save distance and angles between forward and backward weights
+
         if self.weights.grad is not None:
             forward_weights_gradients_norm = torch.norm(self.weights.grad)
             writer.add_scalar(tag='{}/forward_weights_gradients_norm'.format(name),
@@ -261,11 +268,6 @@ class DDTPConvLayer(nn.Module):
                               global_step=step)
         if not no_fb_param:
             feedback_weights_norm = torch.norm(self.feedbackweights)
-            print(self.feedbackweights.shape)
-            #reshaped = torch.reshape(self.feedbackweights, [output_target.shape[0]] + self._feature_size)
-            print(self.weights.shape)
-            # dist = utils.compute_distance(self.feedbackweights, self.weights, is_gradient=False)
-            # angle = utils.compute_angle(self.feedbackweights, self.weights)
             writer.add_scalar(tag='{}/feedback_weights_norm'.format(name),
                               scalar_value=feedback_weights_norm,
                               global_step=step)
