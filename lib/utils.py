@@ -726,7 +726,7 @@ def compute_average_batch_distance(A, B, is_gradient=False):
     else:
         dist = torch.sqrt(((A - B) ** 2).sum() / (B ** 2).sum())
 
-    return dist
+    return dist.item()
 
 
 class NetworkError(Exception):
@@ -1231,16 +1231,29 @@ def nullspace_relative_norm(A, x, tol=1e-12):
     return ratio
 
 
-import tensorflow as tf
-from tensorflow.python.summary.summary_iterator import summary_iterator
+def run_test_compute_angle_and_distance():
+    A = torch.ones((3, 32, 32))
+    B = 0.5 * torch.ones((3, 32, 32))
 
-def read_tf_eventfile(event_file):
-    for e in summary_iterator(event_file):
-        for v in e.summary.value:
-            print(f"{e.step}: {v.tag}: {v.simple_value}")
+    assert compute_distance(A, B, is_gradient=True) == 0.5
+
+    A = torch.ones((10, 3, 32, 32))
+    B = 0.5*torch.ones((10, 3, 32, 32))
+
+    assert compute_average_batch_distance(A,B,is_gradient=True) == 0.5
+
+
+
+#import tensorflow as tf
+#from tensorflow.python.summary.summary_iterator import summary_iterator
+
+# def read_tf_eventfile(event_file):
+#     for e in summary_iterator(event_file):
+#         for v in e.summary.value:
+#             print(f"{e.step}: {v.tag}: {v.simple_value}")
 
 
 if __name__ == '__main__':
-    pass
+    run_test_compute_angle_and_distance()
 
 
