@@ -420,7 +420,7 @@ class DDTPConvNetwork(nn.Module):
         last_layer = self.layers[last_layer_index]
         name = 'layer {}'.format(last_layer_index + 1)
 
-        angles, distances = self.compute_weight_angles_and_distance(last_layer_index, retain_graph_flag=False)
+        angles, distances = self.compute_weight_angles_and_distance(last_layer_index)
         writer.add_scalar(
             tag='{}/weight_angle'.format(name),
             scalar_value=angles[0],
