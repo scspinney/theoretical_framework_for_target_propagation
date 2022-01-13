@@ -353,7 +353,7 @@ class DDTPConvNetwork(nn.Module):
         """
         forward_weights = self.layers[i].weights
         #forward_bias = self.layers[i].bias
-        transpose_feedback_weights = self.layers[i].feedbackweights
+        transpose_feedback_weights = self.layers[i]._feedbackweights
 
         print(f"Forward weight shape: {forward_weights}")
         print(f"Transpose feedback weight shape: {transpose_feedback_weights}")
