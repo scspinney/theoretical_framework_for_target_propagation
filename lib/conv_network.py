@@ -19,6 +19,7 @@ import numpy as np
 from lib.networks import DTPNetwork
 from lib.conv_layers import DDTPConvLayer, DDTPConvControlLayer
 from lib.direct_feedback_layers import DDTPMLPLayer, DDTPControlLayer
+from lib.dtp_layers import DTPLayer
 import torch.nn.functional as F
 from lib import utils
 import pandas as pd
@@ -322,12 +323,12 @@ class DDTPConvNetwork(nn.Module):
         weights_angle = utils.compute_angle(bp_gradients[0].detach(),
                                             gradients[0])
         weights_distance = utils.compute_distance(bp_gradients[0].detach(),
-                                                  gradients[0])
+                                                  gradients[0], True)
         if self.layers[i].bias is not None:
             bias_angle = utils.compute_angle(bp_gradients[1].detach(),
                                              gradients[1])
             bias_distance = utils.compute_distance(bp_gradients[1].detach(),
-                                                      gradients[1])
+                                                      gradients[1], True)
             return (weights_angle, bias_angle), (weights_distance, bias_distance)
         else:
             return (weights_angle, ), (weights_distance, )
@@ -455,7 +456,7 @@ class DDTPConvNetwork(nn.Module):
         angle = utils.compute_average_batch_angle(target_difference.detach(),
                                                   bp_updates)
         distance = utils.compute_average_batch_distance(target_difference.detach(),
-                                                        bp_updates)
+                                                        bp_updates,True)
 
         return angle, distance
 
@@ -480,10 +481,10 @@ class DDTPConvNetwork(nn.Module):
 
         gradients = self.layers[i].get_forward_gradients()
         weights_angle = utils.compute_angle(gnt_updates[0], gradients[0])
-        weights_distance = utils.compute_distance(gnt_updates[0], gradients[0])
+        weights_distance = utils.compute_distance(gnt_updates[0], gradients[0], True)
         if self.layers[i].bias is not None:
             bias_angle = utils.compute_angle(gnt_updates[1], gradients[1])
-            bias_distance = utils.compute_distance(gnt_updates[1], gradients[1])
+            bias_distance = utils.compute_distance(gnt_updates[1], gradients[1], True)
             return (weights_angle, bias_angle), (weights_distance, bias_distance)
         else:
             return (weights_angle, ), (weights_distance, )
@@ -625,6 +626,82 @@ class DDTPConvNetworkCIFAR(DDTPConvNetwork):
 
             self.nullspace_relative_norm = pd.DataFrame(
                 columns=[i for i in range(0, self._depth)])
+
+
+class DTPConvNetworkCIFAR(DDTPConvNetwork):
+    def __init__(self, bias=True, hidden_activation='tanh',
+                 feedback_activation='linear', initialization='xavier_normal',
+                 sigma=0.1, plots=None,
+                 forward_requires_grad=False):
+        nn.Module.__init__(self)
+        l1 = DTPConvLayer(3, 32, (5, 5), 10, [32, 16, 16],
+                           stride=1, padding=2, dilation=1, groups=1,
+                           bias=bias, padding_mode='zeros',
+                           initialization=initialization,
+                           pool_type='max', pool_kernel_size=(3, 3),
+                           pool_stride=(2, 2), pool_padding=1, pool_dilation=1,
+                           forward_activation=hidden_activation,
+                           feedback_activation=feedback_activation)
+        l2 = DTPConvLayer(32, 64, (5, 5), 10, [64, 8, 8],
+                           stride=1, padding=2, dilation=1, groups=1,
+                           bias=bias, padding_mode='zeros',
+                           initialization=initialization,
+                           pool_type='max', pool_kernel_size=(3, 3),
+                           pool_stride=(2, 2), pool_padding=1, pool_dilation=1,
+                           forward_activation=hidden_activation,
+                           feedback_activation=feedback_activation)
+        l3 = DTPLayer(8 * 8 * 64, 512, 10, bias=True,
+                          forward_requires_grad=forward_requires_grad,
+                          forward_activation=hidden_activation,
+                          feedback_activation=feedback_activation,
+                          size_hidden_fb=None, initialization=initialization,
+                          is_output=False,
+                          recurrent_input=False)
+        l4 = DTPLayer(512, 10, 10, bias=True,
+                          forward_requires_grad=forward_requires_grad,
+                          forward_activation='linear',
+                          feedback_activation=feedback_activation,
+                          size_hidden_fb=None, initialization=initialization,
+                          is_output=True,
+                          recurrent_input=False)
+        self._layers = nn.ModuleList([l1, l2, l3, l4])
+        self._depth = 4
+        self.nb_conv = 2
+        self._input = None
+        self._sigma = sigma
+        self._forward_requires_grad = forward_requires_grad
+
+        self._plots = plots
+        if plots is not None:
+            self.bp_angles = pd.DataFrame(
+                columns=[i for i in range(0, self._depth)])
+            self.bp_distances = pd.DataFrame(
+                columns=[i for i in range(0, self._depth)])
+            self.gn_angles = pd.DataFrame(
+                columns=[i for i in range(0, self._depth)])
+            self.gn_distances = pd.DataFrame(
+                columns=[i for i in range(0, self._depth)])
+            self.gnt_angles = pd.DataFrame(
+                columns=[i for i in range(0, self._depth)])
+            self.gnt_distances = pd.DataFrame(
+                columns=[i for i in range(0, self._depth)])
+            self.bp_activation_angles = pd.DataFrame(
+                columns=[i for i in range(0, self._depth)])
+            self.bp_activation_distances = pd.DataFrame(
+                columns=[i for i in range(0, self._depth)])
+            self.gn_activation_angles = pd.DataFrame(
+                columns=[i for i in range(0, self._depth)])
+            self.gn_activation_distances = pd.DataFrame(
+                columns=[i for i in range(0, self._depth)])
+
+            self.reconstruction_loss_init = pd.DataFrame(
+                columns=[i for i in range(0, self._depth)])
+            self.reconstruction_loss = pd.DataFrame(
+                columns=[i for i in range(0, self._depth)])
+
+            self.nullspace_relative_norm = pd.DataFrame(
+                columns=[i for i in range(0, self._depth)])
+
 
 
 class BPConvNetwork(nn.Module):

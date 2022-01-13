@@ -633,7 +633,7 @@ def compute_angle(A, B):
         print(cosine)
     return angle
 
-def compute_distance(A, B):
+def compute_distance(A, B, is_gradient=False):
     """
      Compute the angle between two tensors of the same size. The tensors will
      be flattened, after which the angle is computed.
@@ -651,7 +651,10 @@ def compute_distance(A, B):
         print('tensor B contains nans:')
         print(B)
 
-    dist = torch.sqrt(((A - B) ** 2).sum() / (A ** 2).sum())
+    if is_gradient:
+        dist = torch.sqrt(((A - B) ** 2).sum() / (A ** 2).sum())
+    else:
+        dist = torch.sqrt(((A - B) ** 2).sum() / (B ** 2).sum())
 
     return dist.item()
 
@@ -695,7 +698,7 @@ def compute_average_batch_angle(A, B):
     return 180/np.pi*torch.mean(angles)
 
 
-def compute_average_batch_distance(A, B):
+def compute_average_batch_distance(A, B, is_gradient=False):
     """
     Compute the average of the angles between the mini-batch samples of A and B.
     If the samples of the mini-batch have more than one dimension (minibatch
@@ -718,8 +721,10 @@ def compute_average_batch_distance(A, B):
         print('tensor B contains nans in activation angles:')
         print(B)
 
-
-    dist = torch.sqrt(((A - B) ** 2).sum() / (A ** 2).sum())
+    if is_gradient:
+        dist = torch.sqrt(((A - B) ** 2).sum() / (A ** 2).sum())
+    else:
+        dist = torch.sqrt(((A - B) ** 2).sum() / (B ** 2).sum())
 
     return dist
 
@@ -1224,6 +1229,15 @@ def nullspace_relative_norm(A, x, tol=1e-12):
     x_null_coordinates = A_null.t().mm(x)
     ratio = x_null_coordinates.norm()/x.norm()
     return ratio
+
+
+import tensorflow as tf
+from tensorflow.python.summary.summary_iterator import summary_iterator
+
+def read_tf_eventfile(event_file):
+    for e in summary_iterator(event_file):
+        for v in e.summary.value:
+            print(f"{e.step}: {v.tag}: {v.simple_value}")
 
 
 if __name__ == '__main__':
