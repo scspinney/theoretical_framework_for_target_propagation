@@ -180,6 +180,7 @@ class DDTPConvNetwork(nn.Module):
                          target_lr*gradient
         return output_targets
 
+    #TODO: this might be where to modify to get DTP
     def propagate_backward(self, output_target, i):
         """
         Propagate the output target backwards to layer i in a DTP-like fashion.
