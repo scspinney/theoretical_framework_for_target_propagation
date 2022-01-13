@@ -358,7 +358,7 @@ class DDTPConvNetwork(nn.Module):
 
             if self._plots is not None:
                 self.bp_angles.at[step, i] = angles[0].item()
-                self.bp_distances.at[step, i] = distances[0].item()
+                self.bp_distances.at[step, i] = distances[0]
 
 
             if self.layers[i].bias is not None:
@@ -537,7 +537,7 @@ class DDTPConvNetwork(nn.Module):
                     # print('saving gnt angles')
                     # print(angles[0].item())
                     self.gnt_angles.at[step, i] = angles[0].item()
-                    self.gnt_distances.at[step, i] = distances[0].item()
+                    self.gnt_distances.at[step, i] = distances[0]
 
                 if self.layers[i].bias is not None:
                     writer.add_scalar(

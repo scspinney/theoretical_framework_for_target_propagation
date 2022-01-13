@@ -390,7 +390,7 @@ def run():
                              ' for the layer activations should be computed and'
                              'the angle with the TP updates for the activations'
                              ' should be computed and saved.')
-    vgroup.add_argument('--plots', type=str, default=None,
+    vgroup.add_argument('--plots', type=str, default='save',
                         choices=[None, 'save', 'save_and_show',
                                  'compute'],)
     vgroup.add_argument('--save_loss_plot', action='store_true',
@@ -765,7 +765,11 @@ def run():
         summary['gn_activation_angles'] = net.gn_activation_angles
         summary['bp_angles'] = net.bp_angles
         summary['gnt_angles'] = net.gnt_angles
-        summary['nullspace_relative_norm_angles'] = net.nullspace_relative_norm
+        summary['bp_activation_distances'] = net.bp_activation_distances
+        summary['gn_activation_distances'] = net.gn_activation_distances
+        summary['bp_distances'] = net.bp_distances
+        summary['gnt_distances'] = net.gnt_distances
+        #summary['nullspace_relative_norm_angles'] = net.nullspace_relative_norm
 
 
     # write final summary
