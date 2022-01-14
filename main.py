@@ -101,6 +101,9 @@ def run():
                         help='Learning rate of optimizer for the feedback '
                              'parameters. Default: ' +
                              '%(default)s.')
+    tgroup.add_argument('--nb_feedback_iterations', type=str, default='1',
+                        help='Number of feedback weight training iterations per batch Default: ' +
+                             '%(default)s.')
     tgroup.add_argument('--target_stepsize', type=float, default=0.01,
                         help='Step size for computing the output target based'
                              'on the output gradient. Default: ' +
@@ -481,6 +484,7 @@ def run():
     # Manipulating command line arguments if asked
     args.lr = utils.process_lr(args.lr)
     args.lr_fb = utils.process_lr(args.lr_fb)
+    args.nb_feedback_iterations = utils.process_nb_feedback_iteration(args.nb_feedback_iterations)
     args.epsilon_fb = utils.process_lr(args.epsilon_fb)
     args.epsilon = utils.process_lr(args.epsilon)
     args.size_hidden = utils.process_hdim(args.size_hidden)
