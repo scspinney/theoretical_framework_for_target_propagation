@@ -930,9 +930,9 @@ def process_nb_feedback_iterations(nb_feedback_iterations_str):
     Returns: a float or a numpy array of learning rates
     """
     if ',' in nb_feedback_iterations_str:
-        return np.array(str_to_list(nb_feedback_iterations_str, ','))
+        return np.array(str_to_list(nb_feedback_iterations_str, ',', type='int'))
     else:
-        return float(nb_feedback_iterations_str)
+        return int(nb_feedback_iterations_str)
 
 
 def process_hdim(hdim_str):
