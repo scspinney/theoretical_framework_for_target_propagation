@@ -223,7 +223,8 @@ class DDTPMLPLayer(DTPDRLLayer):
                  fb_hidden_activation=None,
                  initialization='orthogonal',
                  is_output=False,
-                 recurrent_input=False):
+                 recurrent_input=False,
+                 nb_feedback_iterations = 1):
         """
 
         Args:
@@ -262,6 +263,7 @@ class DDTPMLPLayer(DTPDRLLayer):
         self._recurrent_input = recurrent_input
         self._is_output = is_output
         self._has_hidden_fb_layers = size_hidden_fb is not None
+        self._nb_feedback_iterations = nb_feedback_iterations
 
         if fb_hidden_activation is None:
             fb_hidden_activation = feedback_activation

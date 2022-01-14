@@ -238,7 +238,8 @@ def build_network(args):
                                            initialization=args.initialization,
                                            sigma=args.sigma,
                                            plots=args.plots,
-                                           forward_requires_grad=forward_requires_grad)
+                                           forward_requires_grad=forward_requires_grad,
+                                           nb_feedback_iterations=args.nb_feedback_iterations)
     elif args.network_type == 'DDTPConvCIFAR':
         net = conv_network.DDTPConvNetworkCIFAR(bias=not args.no_bias,
                                            hidden_activation=args.hidden_activation,
@@ -246,7 +247,8 @@ def build_network(args):
                                            initialization=args.initialization,
                                            sigma=args.sigma,
                                                 plots=args.plots,
-                                               forward_requires_grad=forward_requires_grad)
+                                               forward_requires_grad=forward_requires_grad,
+                                                nb_feedback_iterations=args.nb_feedback_iterations)
         args.network_type = 'DDTPConv'
     elif args.network_type == 'DDTPConvControlCIFAR':
         net = conv_network.DDTPConvControlNetworkCIFAR(bias=not args.no_bias,

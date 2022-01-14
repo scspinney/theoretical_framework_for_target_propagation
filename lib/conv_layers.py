@@ -29,7 +29,8 @@ class DDTPConvLayer(nn.Module):
                  initialization='xavier_normal', pool_type='max',
                  pool_kernel_size=None, pool_stride=None, pool_padding=0,
                  pool_dilation=1, forward_activation='tanh',
-                 feedback_activation='linear'):
+                 feedback_activation='linear',
+                 nb_feedback_iterations = 1):
         nn.Module.__init__(self)
 
         self._conv_layer = nn.Conv2d(in_channels, out_channels, kernel_size,
@@ -62,6 +63,7 @@ class DDTPConvLayer(nn.Module):
         self._feature_size = feature_size
         self._forward_feedback_angle = None # average batch forward/transpose feedback angle
         self._forward_feedback_distance = None  # average batch forward/transpose feedback distance
+        self._nb_feedback_iterations = nb_feedback_iterations
 
     def construct_pool_layer(self, pool_type, kernel_size, stride, padding, dilation):
         if pool_type == 'max':

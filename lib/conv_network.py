@@ -27,7 +27,7 @@ import pandas as pd
 class DDTPConvNetwork(nn.Module):
     def __init__(self, bias=True, hidden_activation='tanh',
                  feedback_activation='linear', initialization='xavier_normal',
-                 sigma=0.1, plots=None, forward_requires_grad=False):
+                 sigma=0.1, plots=None, forward_requires_grad=False, nb_feedback_iterations = [10,20,20,30,55,20]):
         nn.Module.__init__(self)
         l1 = DDTPConvLayer(3, 96, (5, 5), 10, [96, 16, 16],
                            stride=1, padding=2, dilation=1, groups=1,
@@ -36,7 +36,8 @@ class DDTPConvNetwork(nn.Module):
                            pool_type='max', pool_kernel_size=(3, 3),
                            pool_stride=(2, 2), pool_padding=1, pool_dilation=1,
                            forward_activation=hidden_activation,
-                           feedback_activation=feedback_activation)
+                           feedback_activation=feedback_activation,
+                           nb_feedback_iterations = nb_feedback_iterations[0])
         l2 = DDTPConvLayer(96, 128, (5, 5), 10, [128, 8, 8],
                            stride=1, padding=2, dilation=1, groups=1,
                            bias=bias, padding_mode='zeros',
@@ -44,7 +45,8 @@ class DDTPConvNetwork(nn.Module):
                            pool_type='max', pool_kernel_size=(3, 3),
                            pool_stride=(2, 2), pool_padding=1, pool_dilation=1,
                            forward_activation=hidden_activation,
-                           feedback_activation=feedback_activation)
+                           feedback_activation=feedback_activation,
+                           nb_feedback_iterations = nb_feedback_iterations[1])
         l3 = DDTPConvLayer(128, 256, (5, 5), 10, [256, 4, 4],
                            stride=1, padding=2, dilation=1, groups=1,
                            bias=bias, padding_mode='zeros',
@@ -52,28 +54,32 @@ class DDTPConvNetwork(nn.Module):
                            pool_type='max', pool_kernel_size=(3, 3),
                            pool_stride=(2, 2), pool_padding=1, pool_dilation=1,
                            forward_activation=hidden_activation,
-                           feedback_activation=feedback_activation)
+                           feedback_activation=feedback_activation,
+                           nb_feedback_iterations = nb_feedback_iterations[2])
         l4 = DDTPMLPLayer(4 * 4 * 256, 2048, 10, bias=True,
                           forward_requires_grad=forward_requires_grad,
                           forward_activation=hidden_activation,
                           feedback_activation=feedback_activation,
                           size_hidden_fb=None, initialization=initialization,
                           is_output=False,
-                          recurrent_input=False)
+                          recurrent_input=False,
+                          nb_feedback_iterations = nb_feedback_iterations[3])
         l5 = DDTPMLPLayer(2048, 2048, 10, bias=True,
                           forward_requires_grad=forward_requires_grad,
                           forward_activation=hidden_activation,
                           feedback_activation=feedback_activation,
                           size_hidden_fb=None, initialization=initialization,
                           is_output=False,
-                          recurrent_input=False)
+                          recurrent_input=False,
+                          nb_feedback_iterations = nb_feedback_iterations[4])
         l6 = DDTPMLPLayer(2048, 10, 10, bias=True,
                           forward_requires_grad=forward_requires_grad,
                           forward_activation='linear',
                           feedback_activation=feedback_activation,
                           size_hidden_fb=None, initialization=initialization,
                           is_output=True,
-                          recurrent_input=False)
+                          recurrent_input=False,
+                          nb_feedback_iterations = nb_feedback_iterations[5])
         self._layers = nn.ModuleList([l1, l2, l3, l4, l5, l6])
         self._depth = 6
         self.nb_conv = 3
@@ -640,7 +646,8 @@ class DDTPConvNetworkCIFAR(DDTPConvNetwork):
     def __init__(self, bias=True, hidden_activation='tanh',
                  feedback_activation='linear', initialization='xavier_normal',
                  sigma=0.1, plots=None,
-                 forward_requires_grad=False):
+                 forward_requires_grad=False,
+                 nb_feedback_iterations = [10, 20, 55, 20]):
         nn.Module.__init__(self)
         l1 = DDTPConvLayer(3, 32, (5, 5), 10, [32, 16, 16],
                            stride=1, padding=2, dilation=1, groups=1,
@@ -649,7 +656,8 @@ class DDTPConvNetworkCIFAR(DDTPConvNetwork):
                            pool_type='max', pool_kernel_size=(3, 3),
                            pool_stride=(2, 2), pool_padding=1, pool_dilation=1,
                            forward_activation=hidden_activation,
-                           feedback_activation=feedback_activation)
+                           feedback_activation=feedback_activation,
+                           nb_feedback_iterations = nb_feedback_iterations[0])
         l2 = DDTPConvLayer(32, 64, (5, 5), 10, [64, 8, 8],
                            stride=1, padding=2, dilation=1, groups=1,
                            bias=bias, padding_mode='zeros',
@@ -657,21 +665,24 @@ class DDTPConvNetworkCIFAR(DDTPConvNetwork):
                            pool_type='max', pool_kernel_size=(3, 3),
                            pool_stride=(2, 2), pool_padding=1, pool_dilation=1,
                            forward_activation=hidden_activation,
-                           feedback_activation=feedback_activation)
+                           feedback_activation=feedback_activation,
+                           nb_feedback_iterations = nb_feedback_iterations[1])
         l3 = DDTPMLPLayer(8 * 8 * 64, 512, 10, bias=True,
                           forward_requires_grad=forward_requires_grad,
                           forward_activation=hidden_activation,
                           feedback_activation=feedback_activation,
                           size_hidden_fb=None, initialization=initialization,
                           is_output=False,
-                          recurrent_input=False)
+                          recurrent_input=False,
+                          nb_feedback_iterations = nb_feedback_iterations[2])
         l4 = DDTPMLPLayer(512, 10, 10, bias=True,
                           forward_requires_grad=forward_requires_grad,
                           forward_activation='linear',
                           feedback_activation=feedback_activation,
                           size_hidden_fb=None, initialization=initialization,
                           is_output=True,
-                          recurrent_input=False)
+                          recurrent_input=False,
+                          nb_feedback_iterations = nb_feedback_iterations[3])
         self._layers = nn.ModuleList([l1, l2, l3, l4])
         self._depth = 4
         self.nb_conv = 2
