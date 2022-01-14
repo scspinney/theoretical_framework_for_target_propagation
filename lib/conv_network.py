@@ -437,28 +437,28 @@ class DDTPConvNetwork(nn.Module):
         # )
 
 
-        writer.add_scalar(
-            tag='{}/weight_distance'.format(name),
-            scalar_value=distances[0],
-            global_step=step
-        )
-
-        if self._plots is not None:
-            self.angles.at[step, last_layer_index] = angles[0].item()
-            self.distances.at[step, last_layer_index] = distances[0].item()
-
-
-        if self.layers[last_layer_index].bias is not None:
-            writer.add_scalar(
-                tag='{}/bias_angle'.format(name),
-                scalar_value=angles[1],
-                global_step=step
-            )
-            writer.add_scalar(
-                tag='{}/bias_distance'.format(name),
-                scalar_value=distances[1],
-                global_step=step
-            )
+        # writer.add_scalar(
+        #     tag='{}/weight_distance'.format(name),
+        #     scalar_value=distances[0],
+        #     global_step=step
+        # )
+        #
+        # if self._plots is not None:
+        #     self.angles.at[step, last_layer_index] = angles[0].item()
+        #     self.distances.at[step, last_layer_index] = distances[0].item()
+        #
+        #
+        # if self.layers[last_layer_index].bias is not None:
+        #     writer.add_scalar(
+        #         tag='{}/bias_angle'.format(name),
+        #         scalar_value=angles[1],
+        #         global_step=step
+        #     )
+        #     writer.add_scalar(
+        #         tag='{}/bias_distance'.format(name),
+        #         scalar_value=distances[1],
+        #         global_step=step
+        #     )
 
     def save_bp_activation_angle(self, writer, step, loss,
                                  retain_graph=False):
