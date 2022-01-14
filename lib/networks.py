@@ -582,8 +582,10 @@ class DTPNetwork(nn.Module):
 
         angle = utils.compute_average_batch_angle(target_difference.detach(),
                                                   bp_updates)
+        distance = utils.compute_average_batch_distance(target_difference.detach(),
+                                                        bp_updates)
 
-        return angle
+        return angle, distance
 
     def compute_gnt_angle(self, output_activation, loss, damping,
                           i, step, retain_graph=False, linear=False):
