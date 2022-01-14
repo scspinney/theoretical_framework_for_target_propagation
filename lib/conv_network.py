@@ -357,6 +357,7 @@ class DDTPConvNetwork(nn.Module):
             at index 1 (if bias is not None).
 
         """
+        print(f"Computing weights angle/dist for layer: {i}")
         forward_weights = self.layers[i].weights.detach()
         #forward_bias = self.layers[i].bias
         transpose_feedback_weights = self.layers[i].feedbackweights.t()
