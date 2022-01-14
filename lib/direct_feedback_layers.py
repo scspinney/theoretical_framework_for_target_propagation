@@ -286,9 +286,11 @@ class DDTPMLPLayer(DTPDRLLayer):
 
     @property
     def feedbackweights(self):
+        print("GETTING FEEDBACK WEIGHTS")
         if not self._has_hidden_fb_layers:
             return self._fb_mlp.layers[0].weight
         else:
+            print("Returns none...")
             return None
 
     @property
