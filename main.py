@@ -484,7 +484,7 @@ def run():
     # Manipulating command line arguments if asked
     args.lr = utils.process_lr(args.lr)
     args.lr_fb = utils.process_lr(args.lr_fb)
-    args.nb_feedback_iterations = utils.process_nb_feedback_iteration(args.nb_feedback_iterations)
+    args.nb_feedback_iterations = utils.process_nb_feedback_iterations(args.nb_feedback_iterations)
     args.epsilon_fb = utils.process_lr(args.epsilon_fb)
     args.epsilon = utils.process_lr(args.epsilon)
     args.size_hidden = utils.process_hdim(args.size_hidden)

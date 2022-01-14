@@ -357,7 +357,7 @@ class DDTPConvNetwork(nn.Module):
             at index 1 (if bias is not None).
 
         """
-        print(f"Computing weights angle/dist for layer: {i}")
+        #print(f"Computing weights angle/dist for layer: {i}")
         forward_weights = self.layers[i].weights.detach()
         #forward_bias = self.layers[i].bias
         transpose_feedback_weights = self.layers[i].feedbackweights.t()
@@ -428,12 +428,13 @@ class DDTPConvNetwork(nn.Module):
         last_layer = self.layers[last_layer_index]
         name = 'layer {}'.format(last_layer_index + 1)
 
-        angles, distances = self.compute_weight_angles_and_distance(last_layer_index)
-        writer.add_scalar(
-            tag='{}/weight_angle'.format(name),
-            scalar_value=angles[0],
-            global_step=step
-        )
+        #TODO: skip for now, breaks on last layer because it does not get a backward
+        #angles, distances = self.compute_weight_angles_and_distance(last_layer_index)
+        # writer.add_scalar(
+        #     tag='{}/weight_angle'.format(name),
+        #     scalar_value=angles[0],
+        #     global_step=step
+        # )
 
 
         writer.add_scalar(
