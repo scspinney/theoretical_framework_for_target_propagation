@@ -920,6 +920,21 @@ def process_lr(lr_str):
     else:
         return float(lr_str)
 
+def process_nb_feedback_iterations(nb_feedback_iterations_str):
+    """
+    Process the nb_feedback_iterations provided by argparse.
+    Args:
+        nb_feedback_iterations_str (str): a string containing either a single float indicating the
+            number of iterations, or a list of iterations, one for each layer of
+            the network.
+    Returns: a float or a numpy array of learning rates
+    """
+    if ',' in nb_feedback_iterations_str:
+        return np.array(str_to_list(nb_feedback_iterations_str, ','))
+    else:
+        return float(nb_feedback_iterations_str)
+
+
 def process_hdim(hdim_str):
     if ',' in hdim_str:
         return str_to_list(hdim_str, ',', type='int')
