@@ -268,6 +268,7 @@ class DDTPMLPLayer(DTPDRLLayer):
         if fb_hidden_activation is None:
             fb_hidden_activation = feedback_activation
 
+        #TODO: so if its the last layer it does not get a backward layer
         if not is_output:
             if recurrent_input:
                 n_in = size_output + out_features
@@ -286,11 +287,9 @@ class DDTPMLPLayer(DTPDRLLayer):
 
     @property
     def feedbackweights(self):
-        print("GETTING FEEDBACK WEIGHTS")
         if not self._has_hidden_fb_layers:
             return self._fb_mlp.layers[0].weight
         else:
-            print("Returns none...")
             return None
         print("Returns nothing!")
     @property
