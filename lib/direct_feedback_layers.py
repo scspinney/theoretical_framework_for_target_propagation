@@ -292,7 +292,7 @@ class DDTPMLPLayer(DTPDRLLayer):
         else:
             print("Returns none...")
             return None
-
+        print("Returns nothing!")
     @property
     def feedbackbias(self):
         if not self._has_hidden_fb_layers:
