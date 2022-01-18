@@ -34,7 +34,6 @@ import torch
 import torchvision
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
-import orion
 from lib.train import train, train_bp
 from lib import utils
 from lib import builders

@@ -28,7 +28,7 @@ import torch.nn.functional as F
 import matplotlib.pyplot as plt
 from tensorboardX import SummaryWriter
 import pandas as pd
-
+import orion
 from lib import utils
 from lib.networks import LeeDTPNetwork, DTPNetwork
 import pickle
@@ -323,7 +323,10 @@ def train(args, device, train_loader, net, writer, test_loader, summary,
                 train_var.summary['acc_train_val_best'] = \
                     train_var.epoch_accuracies[best_epoch]
 
+            orion.client.cli.report_objective(100-train_var.test_accuracy, name='test_error')
+
     utils.save_summary_dict(args, train_var.summary)
+
 
     print('Training network ... Done')
     return train_var.summary
