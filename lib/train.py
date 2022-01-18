@@ -254,10 +254,11 @@ def train(args, device, train_loader, net, writer, test_loader, summary,
                     #break
             if args.dataset in ['cifar10']:
                 if train_var.epoch_accuracy < 0.25:
+                    print('train epoch accuracy below 0.25. Not stopping.')
                     # error code to indicate pruned run
-                    print('writing error code -1')
-                    train_var.summary['finished'] = -1
-                    break
+                    #print('writing error code -1')
+                    #train_var.summary['finished'] = -1
+                    #break
 
         # do a small gridsearch to find the damping constant for GNT angles
         if e == 2:
@@ -828,14 +829,14 @@ def train_bp(args, device, train_loader, net, writer, test_loader, summary,
                 if epoch_accuracy < 0.4:
                     # error code to indicate pruned run
                     print('writing error code -1')
-                    summary['finished'] = -1
-                    break
+                    #summary['finished'] = -1
+                    #break
             if args.dataset in ['cifar10']:
                 if epoch_accuracy < 0.25:
                     # error code to indicate pruned run
                     print('writing error code -1')
-                    summary['finished'] = -1
-                    break
+                    #summary['finished'] = -1
+                    #break
 
     if not args.epochs == 0:
         # save training summary results in summary dict
