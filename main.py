@@ -80,7 +80,7 @@ def run():
                              'Default: %(default)s.')
 
     tgroup = parser.add_argument_group('Training options')
-    tgroup.add_argument('--epochs', type=int, metavar='N', default=100,
+    tgroup.add_argument('--epochs', type=int, metavar='N', default=90,
                         help='Number of training epochs. ' +
                              'Default: %(default)s.')
     tgroup.add_argument('--batch_size', type=int, metavar='N', default=100,
@@ -111,7 +111,7 @@ def run():
                         choices=['SGD', 'RMSprop', 'Adam'],
                         help='Optimizer used for training. Default: '
                              '%(default)s.')
-    tgroup.add_argument('--optimizer_fb', type=str, default='SGD',
+    tgroup.add_argument('--optimizer_fb', type=str, default=None,
                         choices=[None, 'SGD', 'RMSprop', 'Adam'],
                         help='Optimizer used for training the feedback '
                              'parameters.')

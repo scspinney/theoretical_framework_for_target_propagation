@@ -28,7 +28,7 @@ import torch.nn.functional as F
 import matplotlib.pyplot as plt
 from tensorboardX import SummaryWriter
 import pandas as pd
-import orion
+from orion.client import report_objective
 from lib import utils
 from lib.networks import LeeDTPNetwork, DTPNetwork
 import pickle
@@ -247,10 +247,11 @@ def train(args, device, train_loader, net, writer, test_loader, summary,
             # stop unpromising runs
             if args.dataset in ['mnist', 'fashion_mnist']:
                 if train_var.epoch_accuracy < 0.4:
+                    print('train epoch accuracy below 0.4. Not stopping.')
                     # error code to indicate pruned run
-                    print('writing error code -1')
-                    train_var.summary['finished'] = -1
-                    break
+                    #print('writing error code -1')
+                    #train_var.summary['finished'] = -1
+                    #break
             if args.dataset in ['cifar10']:
                 if train_var.epoch_accuracy < 0.25:
                     # error code to indicate pruned run
@@ -323,7 +324,7 @@ def train(args, device, train_loader, net, writer, test_loader, summary,
                 train_var.summary['acc_train_val_best'] = \
                     train_var.epoch_accuracies[best_epoch]
 
-            orion.client.cli.report_objective(100-train_var.test_accuracy, name='test_error')
+            report_objective(float(100-train_var.test_accuracy), name='test_error')
 
     utils.save_summary_dict(args, train_var.summary)
 
