@@ -488,6 +488,7 @@ def run():
     args.epsilon_fb = utils.process_lr(args.epsilon_fb)
     args.epsilon = utils.process_lr(args.epsilon)
     args.size_hidden = utils.process_hdim(args.size_hidden)
+    args.random_seed = int(args.random_seed)
     if args.size_mlp_fb == 'None':
         args.size_mlp_fb = None
     else:
@@ -551,10 +552,11 @@ def run():
 
 
     ### Ensure deterministic computation.
-    torch.manual_seed(args.random_seed)
-    torch.cuda.manual_seed_all(args.random_seed)
-    np.random.seed(args.random_seed)
-    random.seed(args.random_seed)
+    print(f"RANDOM SEED: {args.random_seed}")
+    torch.manual_seed(int(args.random_seed))
+    torch.cuda.manual_seed_all(int(args.random_seed))
+    np.random.seed(int(args.random_seed))
+    random.seed(int(args.random_seed))
 
     # Ensure that runs are reproducible even on GPU. Note, this slows down
     # training!

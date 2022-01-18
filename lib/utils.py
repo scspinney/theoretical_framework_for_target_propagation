@@ -929,10 +929,12 @@ def process_nb_feedback_iterations(nb_feedback_iterations_str):
             the network.
     Returns: a float or a numpy array of learning rates
     """
-    if ',' in nb_feedback_iterations_str:
-        return np.array(str_to_list(nb_feedback_iterations_str, ',', type='int'))
-    else:
-        return int(nb_feedback_iterations_str)
+    if type(nb_feedback_iterations_str) is str:
+        if ',' in nb_feedback_iterations_str:
+            return np.array(str_to_list(nb_feedback_iterations_str, ',', type='int'))
+        else:
+            return nb_feedback_iterations_str
+    else
 
 
 def process_hdim(hdim_str):
