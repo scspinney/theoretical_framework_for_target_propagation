@@ -915,6 +915,7 @@ def process_lr(lr_str):
             the network.
     Returns: a float or a numpy array of learning rates
     """
+    lr_str = str(lr_str)
     if ',' in lr_str:
         return np.array(str_to_list(lr_str, ','))
     else:
@@ -929,12 +930,13 @@ def process_nb_feedback_iterations(nb_feedback_iterations_str):
             the network.
     Returns: a float or a numpy array of learning rates
     """
-    if type(nb_feedback_iterations_str) is str:
-        if ',' in nb_feedback_iterations_str:
-            return np.array(str_to_list(nb_feedback_iterations_str, ',', type='int'))
-        else:
-            return nb_feedback_iterations_str
-    else
+
+    nb_feedback_iterations_str = str(nb_feedback_iterations_str)
+    if ',' in nb_feedback_iterations_str:
+        return np.array(str_to_list(nb_feedback_iterations_str, ',', type='int'))
+    else:
+        return list(nb_feedback_iterations_str)
+
 
 
 def process_hdim(hdim_str):
