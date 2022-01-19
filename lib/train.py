@@ -176,6 +176,8 @@ def train(args, device, train_loader, net, writer, test_loader, summary,
                                                train_loader,
                                                net, writer, log=False)
 
+        if args.scheduler:
+            args.scheduler.step()
         train_var.test_accuracy, train_var.test_loss = \
             test(args, device, net, test_loader,
                  train_var.loss_function)

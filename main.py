@@ -96,6 +96,7 @@ def run():
                              ' list should be equal to num_hidden + 1. The list'
                              'may not contain spaces. Default: ' +
                              '%(default)s.')
+    tgroup.add_argument('--scheduler', action='store_true', help='Add cosine annleaning schuler for forward weights.')
     tgroup.add_argument('--lr_fb', type=str, default='0.000101149118237',
                         help='Learning rate of optimizer for the feedback '
                              'parameters. Default: ' +
@@ -428,6 +429,7 @@ def run():
                              'saved.')
 
 
+
     args = parser.parse_args()
     args.save_angle = args.save_GN_activations_angle or \
                        args.save_BP_activations_angle or \
@@ -495,6 +497,10 @@ def run():
 
     if args.normalize_lr:
         args.lr = args.lr/args.target_stepsize
+
+    if args.scheduler:
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(args.optimizer, 85, eta_min=1e-5)
+        print("We are using a learning rate scheduler!")
 
     if args.network_type in ['GN', 'GN2']:
         # if the GN variant of the network is used, the fb weights do not need
