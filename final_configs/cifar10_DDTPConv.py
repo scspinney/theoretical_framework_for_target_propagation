@@ -3,7 +3,7 @@ config = {
 'beta1_fb': 0.9,
 'beta2': 0.999,
 'beta2_fb': 0.999,
-'epsilon': '[2.7867895625009e-08, 1.9868935703787622e-08, 4.515242618159344e-06, 4.046144976139705e-05]',
+'epsilon': [2.7867895625009e-08, 1.9868935703787622e-08, 4.515242618159344e-06, 4.046144976139705e-05],
 'epsilon_fb': 7.529093372180766e-07,
 'feedback_wd': 6.169295107849636e-05,
 'lr': [0.00025935571806476586, 0.000885500279951265, 0.0001423047695105589, 3.3871035558126015e-06],
@@ -20,9 +20,9 @@ config = {
 # ### Training options ###
 'optimizer': 'Adam',
 'optimizer_fb': 'Adam',
-'momentum': 0.,
+'momentum': 0.9,
 'parallel': True,
-'normalize_lr': True,
+'normalize_lr': False,
 'batch_size': 128,
 'epochs_fb': 10,
 'not_randomized': True,
@@ -31,6 +31,7 @@ config = {
 'extra_fb_epochs': 1,
 'epochs': 90,
 'double_precision': True,
+'scheduler': False,
 
 ### Network options ###
 # 'num_hidden': 3,
