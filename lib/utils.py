@@ -915,6 +915,7 @@ def process_lr(lr_str):
             the network.
     Returns: a float or a numpy array of learning rates
     """
+    print(lr_str)
     lr_str = str(lr_str)
     if ',' in lr_str:
         return np.array(str_to_list(lr_str, ','))
