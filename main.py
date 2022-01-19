@@ -498,9 +498,6 @@ def run():
     if args.normalize_lr:
         args.lr = args.lr/args.target_stepsize
 
-    if args.scheduler:
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(args.optimizer, 85, eta_min=1e-5)
-        print("We are using a learning rate scheduler!")
 
     if args.network_type in ['GN', 'GN2']:
         # if the GN variant of the network is used, the fb weights do not need

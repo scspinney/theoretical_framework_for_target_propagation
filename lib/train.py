@@ -69,6 +69,12 @@ def train(args, device, train_loader, net, writer, test_loader, summary,
 
     train_var.forward_optimizer, train_var.feedback_optimizer = \
         utils.choose_optimizer(args, net)
+
+
+    if args.scheduler:
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(train_var.forward_optimizer, 85, eta_min=1e-5)
+        print("We are using a learning rate scheduler!")
+
     if args.classification:
         if args.output_activation == 'softmax':
             train_var.loss_function = nn.CrossEntropyLoss()
@@ -177,7 +183,7 @@ def train(args, device, train_loader, net, writer, test_loader, summary,
                                                net, writer, log=False)
 
         if args.scheduler:
-            args.scheduler.step()
+            scheduler.step()
         train_var.test_accuracy, train_var.test_loss = \
             test(args, device, net, test_loader,
                  train_var.loss_function)
