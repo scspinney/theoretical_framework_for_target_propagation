@@ -87,7 +87,7 @@ def run():
                         help='Training batch size. '
                              'Choose divisor of "num_train". '
                              'Default: %(default)s.')
-    tgroup.add_argument('--lr', type=float, default=0.01,
+    tgroup.add_argument('--lr', type=str, default='0.01',
                         help='Learning rate of optimizer for the forward '
                              'parameters. You can either provide a single '
                              'float that will be used as lr for all the layers,'
