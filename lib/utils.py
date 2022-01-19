@@ -300,7 +300,8 @@ class OptimizerList(object):
                         parameters = [net.layers[i].weights, net.layers[i].bias]
                 optimizer_f_params.append({"params": parameters,
                                        "lr": lr,
-                                       "weight_decay": args.forward_wd})
+                                       "weight_decay": args.forward_wd,
+                                       "eps": eps})
 
             if args.optimizer == 'SGD':
                 optimizer_list = [torch.optim.SGD(optimizer_f_params, momentum=args.momentum)]
@@ -308,8 +309,7 @@ class OptimizerList(object):
             elif args.optimizer == 'Adam':
                 optimizer_list = [torch.optim.Adam(
                     optimizer_f_params,
-                    betas=(args.beta1, args.beta2),
-                    eps=eps)]
+                    betas=(args.beta1, args.beta2))]
 
         else:
             raise ValueError('Command line argument lr={} is not recognized '
