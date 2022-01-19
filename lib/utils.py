@@ -918,8 +918,10 @@ def process_lr(lr_str):
     print(lr_str)
     lr_str = str(lr_str)
     if ',' in lr_str:
+        print("going into str to list")
         return np.array(str_to_list(lr_str, ','))
     else:
+        print("before error")
         return float(lr_str)
 
 def process_nb_feedback_iterations(nb_feedback_iterations_str):
