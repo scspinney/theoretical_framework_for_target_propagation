@@ -325,7 +325,7 @@ def train(args, device, train_loader, net, writer, test_loader, summary,
                 train_var.summary['acc_train_val_best'] = \
                     train_var.epoch_accuracies[best_epoch]
 
-            report_objective(float(100-train_var.test_accuracy), name='test_error')
+            report_objective(float(1-train_var.test_accuracy), name='test_error')
 
     utils.save_summary_dict(args, train_var.summary)
 

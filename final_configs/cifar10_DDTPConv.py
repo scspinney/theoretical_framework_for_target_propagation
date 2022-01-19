@@ -12,7 +12,7 @@ config = {
 'sigma': 0.00921040366516759,
 'target_stepsize': 0.015962099947441903,
 'dataset': 'cifar10',
-'out_dir': 'logs/DDTPConv_cifarCIFAR',
+#'out_dir': 'logs/DDTPConv_cifarCIFAR',
 'network_type': 'DDTPConvCIFAR',
 'initialization': 'xavier_normal',
 'fb_activation': 'linear',
@@ -43,7 +43,7 @@ config = {
 
 ### Miscellaneous options ###
 'no_cuda': False,
-'random_seed': 42,
+#'random_seed': 42,
 'cuda_deterministic': False,
 'freeze_BPlayers': False,
 'multiple_hpsearch': False,
