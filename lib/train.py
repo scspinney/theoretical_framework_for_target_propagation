@@ -72,7 +72,7 @@ def train(args, device, train_loader, net, writer, test_loader, summary,
 
 
     if args.scheduler:
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(train_var.forward_optimizer, 85, eta_min=1e-5)
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(train_var.forward_optimizer[0], 85, eta_min=1e-5)
         print("We are using a learning rate scheduler!")
 
     if args.classification:
