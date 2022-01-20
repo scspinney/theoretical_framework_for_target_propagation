@@ -231,7 +231,7 @@ class DDTPConvNetwork(nn.Module):
     def compute_feedback_gradients(self, i):
         self.reconstruction_loss_index = i
         h_corrupted = self.layers[i].activations + \
-                      self.sigma * torch.randn_like(self.layers[i].activations)
+                      self.sigma[i] * torch.randn_like(self.layers[i].activations)
 
         output_corrupted = self.dummy_forward(h_corrupted, i)
         output_noncorrupted = self.layers[-1].activations
@@ -239,7 +239,7 @@ class DDTPConvNetwork(nn.Module):
         self.layers[i].compute_feedback_gradients(h_corrupted,
                                                   output_corrupted,
                                                   output_noncorrupted,
-                                                  self.sigma)
+                                                  self.sigma[i])
     def get_forward_parameter_list(self):
         parameterlist = []
         for layer in self.layers:
@@ -797,7 +797,6 @@ class DTPConvNetworkCIFAR(DDTPConvNetwork):
 
             self.nullspace_relative_norm = pd.DataFrame(
                 columns=[i for i in range(0, self._depth)])
-
 
 
 class BPConvNetwork(nn.Module):

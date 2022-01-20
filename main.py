@@ -96,6 +96,7 @@ def run():
                              ' list should be equal to num_hidden + 1. The list'
                              'may not contain spaces. Default: ' +
                              '%(default)s.')
+    tgroup.add_argument('--scheduler', action='store_true', help='Add cosine annleaning schuler for forward weights.')
     tgroup.add_argument('--lr_fb', type=str, default='0.000101149118237',
                         help='Learning rate of optimizer for the feedback '
                              'parameters. Default: ' +
@@ -118,7 +119,7 @@ def run():
     tgroup.add_argument('--momentum', type=float, default=0.9,
                         help='Momentum of the SGD or RMSprop optimizer. ' +
                              'Default: %(default)s.')
-    tgroup.add_argument('--sigma', type=float, default=0.08,
+    tgroup.add_argument('--sigma', type=str, default='0.08',
                         help='svd of gaussian noise used to corrupt the hidden'
                              ' layer activations for computing the '
                              'reconstruction loss. Default: %(default)s.')
@@ -428,6 +429,7 @@ def run():
                              'saved.')
 
 
+
     args = parser.parse_args()
     args.save_angle = args.save_GN_activations_angle or \
                        args.save_BP_activations_angle or \
@@ -484,6 +486,7 @@ def run():
     args.lr = utils.process_lr(args.lr)
     args.lr_fb = utils.process_lr(args.lr_fb)
     args.nb_feedback_iterations = utils.process_nb_feedback_iterations(args.nb_feedback_iterations)
+    args.sigma = utils.process_lr(args.sigma)
     args.epsilon_fb = utils.process_lr(args.epsilon_fb)
     args.epsilon = utils.process_lr(args.epsilon)
     args.size_hidden = utils.process_hdim(args.size_hidden)
@@ -495,6 +498,7 @@ def run():
 
     if args.normalize_lr:
         args.lr = args.lr/args.target_stepsize
+
 
     if args.network_type in ['GN', 'GN2']:
         # if the GN variant of the network is used, the fb weights do not need

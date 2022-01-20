@@ -276,7 +276,8 @@ class OptimizerList(object):
                 raise NetworkError('multiple learning rates are only supported '
                                    'for SGD optimizer')
 
-            optimizer_list = []
+            optimizer_f_params = []
+
             for i, lr in enumerate(args.lr):
                 eps = args.epsilon[i]
                 if args.network_type == 'BPConv':
@@ -297,18 +298,19 @@ class OptimizerList(object):
                         parameters = [net.layers[i].weights]
                     else:
                         parameters = [net.layers[i].weights, net.layers[i].bias]
-                if args.optimizer == 'SGD':
-                    optimizer = torch.optim.SGD(parameters,
-                                                lr=lr, momentum=args.momentum,
-                                                weight_decay=args.forward_wd)
-                elif args.optimizer == 'Adam':
-                    optimizer = torch.optim.Adam(
-                        parameters,
-                        lr=lr,
-                        betas=(args.beta1, args.beta2),
-                        eps=eps,
-                        weight_decay=args.forward_wd)
-                optimizer_list.append(optimizer)
+                optimizer_f_params.append({"params": parameters,
+                                       "lr": lr,
+                                       "weight_decay": args.forward_wd,
+                                       "eps": eps})
+
+            if args.optimizer == 'SGD':
+                optimizer_list = [torch.optim.SGD(optimizer_f_params, momentum=args.momentum)]
+
+            elif args.optimizer == 'Adam':
+                optimizer_list = [torch.optim.Adam(
+                    optimizer_f_params,
+                    betas=(args.beta1, args.beta2))]
+
         else:
             raise ValueError('Command line argument lr={} is not recognized '
                              'as a float'
@@ -915,13 +917,10 @@ def process_lr(lr_str):
             the network.
     Returns: a float or a numpy array of learning rates
     """
-    print(lr_str)
     lr_str = str(lr_str)
     if ',' in lr_str:
-        print("going into str to list")
         return np.array(str_to_list(lr_str, ','))
     else:
-        print("before error")
         return float(lr_str)
 
 def process_nb_feedback_iterations(nb_feedback_iterations_str):
