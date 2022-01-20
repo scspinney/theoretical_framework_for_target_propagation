@@ -119,7 +119,7 @@ def run():
     tgroup.add_argument('--momentum', type=float, default=0.9,
                         help='Momentum of the SGD or RMSprop optimizer. ' +
                              'Default: %(default)s.')
-    tgroup.add_argument('--sigma', type=float, default=0.08,
+    tgroup.add_argument('--sigma', type=str, default='0.08',
                         help='svd of gaussian noise used to corrupt the hidden'
                              ' layer activations for computing the '
                              'reconstruction loss. Default: %(default)s.')
@@ -486,6 +486,7 @@ def run():
     args.lr = utils.process_lr(args.lr)
     args.lr_fb = utils.process_lr(args.lr_fb)
     args.nb_feedback_iterations = utils.process_nb_feedback_iterations(args.nb_feedback_iterations)
+    args.sigma = utils.process_lr(args.sigma)
     args.epsilon_fb = utils.process_lr(args.epsilon_fb)
     args.epsilon = utils.process_lr(args.epsilon)
     args.size_hidden = utils.process_hdim(args.size_hidden)
