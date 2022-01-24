@@ -677,7 +677,8 @@ def run():
 
         transform = transforms.Compose(
             [transforms.ToTensor(),
-             transforms.Normalize((0.4914, 0.4822, 0.4465), (3 * 0.2023, 3 * 0.1994, 3 * 0.2010))])
+             transforms.Normalize(
+            mean=(0.4914, 0.4822, 0.4465), std=(0.247, 0.243, 0.261))])
 
         trainset_total = torchvision.datasets.CIFAR10(root=data_dir,
                                                       train=True,
