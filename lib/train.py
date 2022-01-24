@@ -184,6 +184,7 @@ def train(args, device, train_loader, net, writer, test_loader, summary,
 
         if args.scheduler:
             scheduler.step()
+
         train_var.test_accuracy, train_var.test_loss = \
             test(args, device, net, test_loader,
                  train_var.loss_function)
@@ -366,6 +367,7 @@ def train_parallel(args, train_var, device, train_loader, net, writer):
             inputs, targets = inputs.to(device), targets.to(device)
         if not args.network_type == 'DDTPConv':
             inputs = inputs.flatten(1, -1)
+        print(f"Input shape: {inputs.shape}")
         predictions = net.forward(inputs)
         if args.classification and args.output_activation == 'sigmoid':
             # convert targets to one hot vectors for MSE loss:

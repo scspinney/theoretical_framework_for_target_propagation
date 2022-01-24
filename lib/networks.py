@@ -199,6 +199,8 @@ class DTPNetwork(nn.Module):
 
         for layer in self.layers:
             y = layer.forward(y)
+            print(f"Layer: {layer}")
+            print(f"Output shape: {y.shape}")
 
         # the output of the network requires a gradient in order to compute the
         # target (in compute_output_target() )
