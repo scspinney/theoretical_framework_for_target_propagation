@@ -22,8 +22,10 @@ import numpy as np
 import main
 
 
-def _override_cmd_arg(config):
+def _override_cmd_arg(config,seed,out_dir):
     sys.argv = [sys.argv[0]]
+    sys.argv.append(f'--random_seed={seed}')
+    sys.argv.append(f'--out_dir={out_dir}')
     for k, v in config.items():
         if isinstance(v, bool):
             cmd = '--%s' % k if v else ''
@@ -37,9 +39,19 @@ def run():
     parser.add_argument('--config_module', type=str,
                         default='figure_scripts.config_toy_examples',
                         help='The name of the module containing the config.')
+
+    parser.add_argument('--random_seed', type=int,
+                        default=42,
+                        help='Random seed')
+    parser.add_argument('--out_dir', type=str,
+                        default='',
+                        help='Out directory')
+
     args = parser.parse_args()
     config_module = importlib.import_module(args.config_module)
-    _override_cmd_arg(config_module.config)
+    #config_module['random_seed'] = args.random_seed
+    #config_module['out_dir'] = args.out_dir
+    _override_cmd_arg(config_module.config,args.random_seed,args.out_dir)
     summary = main.run()
     return summary
 

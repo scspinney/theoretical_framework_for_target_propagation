@@ -25,7 +25,7 @@ from lib import utils
 import pandas as pd
 
 class DDTPConvNetwork(nn.Module):
-    def __init__(self, bias=True, hidden_activation='tanh',
+    def __init__(self,  bias=True, hidden_activation='tanh',
                  feedback_activation='linear', initialization='xavier_normal',
                  sigma=0.1, plots=None, forward_requires_grad=False, nb_feedback_iterations = [10,20,20,30,55,20]):
         nn.Module.__init__(self)
@@ -231,7 +231,7 @@ class DDTPConvNetwork(nn.Module):
     def compute_feedback_gradients(self, i):
         self.reconstruction_loss_index = i
         h_corrupted = self.layers[i].activations + \
-                      self.sigma * torch.randn_like(self.layers[i].activations)
+                      self.sigma[i] * torch.randn_like(self.layers[i].activations)
 
         output_corrupted = self.dummy_forward(h_corrupted, i)
         output_noncorrupted = self.layers[-1].activations
@@ -239,7 +239,7 @@ class DDTPConvNetwork(nn.Module):
         self.layers[i].compute_feedback_gradients(h_corrupted,
                                                   output_corrupted,
                                                   output_noncorrupted,
-                                                  self.sigma)
+                                                  self.sigma[i])
     def get_forward_parameter_list(self):
         parameterlist = []
         for layer in self.layers:
@@ -651,25 +651,30 @@ class DDTPConvNetworkCIFAR(DDTPConvNetwork):
                  forward_requires_grad=False,
                  nb_feedback_iterations = [10, 20, 55, 20]):
         nn.Module.__init__(self)
-        l1 = DDTPConvLayer(3, 32, (5, 5), 10, [32, 16, 16],
+        # NOTE: Our repo's LeNet uses a maxpool with padding of 0, but theirs uses padding of 1!
+        # pool_padding = 1
+        pool_padding = 0
+        l1 = DDTPConvLayer(3, 32, (5, 5), output_size=10, feature_size=[32, 16, 16] if pool_padding==1 else [32, 15, 15],
                            stride=1, padding=2, dilation=1, groups=1,
                            bias=bias, padding_mode='zeros',
                            initialization=initialization,
                            pool_type='max', pool_kernel_size=(3, 3),
-                           pool_stride=(2, 2), pool_padding=1, pool_dilation=1,
+                           pool_stride=(2, 2), pool_padding=pool_padding, pool_dilation=1,
                            forward_activation=hidden_activation,
                            feedback_activation=feedback_activation,
                            nb_feedback_iterations = nb_feedback_iterations[0])
-        l2 = DDTPConvLayer(32, 64, (5, 5), 10, [64, 8, 8],
+        l2 = DDTPConvLayer(32, 64, (5, 5), output_size=10,
+                           feature_size=[64, 8, 8] if pool_padding==1 else [64, 7, 7],
                            stride=1, padding=2, dilation=1, groups=1,
                            bias=bias, padding_mode='zeros',
                            initialization=initialization,
                            pool_type='max', pool_kernel_size=(3, 3),
-                           pool_stride=(2, 2), pool_padding=1, pool_dilation=1,
+                           pool_stride=(2, 2), pool_padding=pool_padding, pool_dilation=1,
                            forward_activation=hidden_activation,
                            feedback_activation=feedback_activation,
                            nb_feedback_iterations = nb_feedback_iterations[1])
-        l3 = DDTPMLPLayer(8 * 8 * 64, 512, 10, bias=True,
+        l3 = DDTPMLPLayer(in_features=(8 * 8 * 64 if pool_padding == 1 else 7 * 7 * 64),
+                          out_features=512, size_output=10, bias=True,
                           forward_requires_grad=forward_requires_grad,
                           forward_activation=hidden_activation,
                           feedback_activation=feedback_activation,
@@ -724,79 +729,6 @@ class DDTPConvNetworkCIFAR(DDTPConvNetwork):
                 columns=[i for i in range(0, self._depth)])
 
 
-class DTPConvNetworkCIFAR(DDTPConvNetwork):
-    def __init__(self, bias=True, hidden_activation='tanh',
-                 feedback_activation='linear', initialization='xavier_normal',
-                 sigma=0.1, plots=None,
-                 forward_requires_grad=False):
-        nn.Module.__init__(self)
-        l1 = DTPConvLayer(3, 32, (5, 5), 10, [32, 16, 16],
-                           stride=1, padding=2, dilation=1, groups=1,
-                           bias=bias, padding_mode='zeros',
-                           initialization=initialization,
-                           pool_type='max', pool_kernel_size=(3, 3),
-                           pool_stride=(2, 2), pool_padding=1, pool_dilation=1,
-                           forward_activation=hidden_activation,
-                           feedback_activation=feedback_activation)
-        l2 = DTPConvLayer(32, 64, (5, 5), 10, [64, 8, 8],
-                           stride=1, padding=2, dilation=1, groups=1,
-                           bias=bias, padding_mode='zeros',
-                           initialization=initialization,
-                           pool_type='max', pool_kernel_size=(3, 3),
-                           pool_stride=(2, 2), pool_padding=1, pool_dilation=1,
-                           forward_activation=hidden_activation,
-                           feedback_activation=feedback_activation)
-        l3 = DTPLayer(8 * 8 * 64, 512, 10, bias=True,
-                          forward_requires_grad=forward_requires_grad,
-                          forward_activation=hidden_activation,
-                          feedback_activation=feedback_activation,
-                          size_hidden_fb=None, initialization=initialization,
-                          is_output=False,
-                          recurrent_input=False)
-        l4 = DTPLayer(512, 10, 10, bias=True,
-                          forward_requires_grad=forward_requires_grad,
-                          forward_activation='linear',
-                          feedback_activation=feedback_activation,
-                          size_hidden_fb=None, initialization=initialization,
-                          is_output=True,
-                          recurrent_input=False)
-        self._layers = nn.ModuleList([l1, l2, l3, l4])
-        self._depth = 4
-        self.nb_conv = 2
-        self._input = None
-        self._sigma = sigma
-        self._forward_requires_grad = forward_requires_grad
-
-        self._plots = plots
-        if plots is not None:
-            self.bp_angles = pd.DataFrame(
-                columns=[i for i in range(0, self._depth)])
-            self.bp_distances = pd.DataFrame(
-                columns=[i for i in range(0, self._depth)])
-            self.gn_angles = pd.DataFrame(
-                columns=[i for i in range(0, self._depth)])
-            self.gn_distances = pd.DataFrame(
-                columns=[i for i in range(0, self._depth)])
-            self.gnt_angles = pd.DataFrame(
-                columns=[i for i in range(0, self._depth)])
-            self.gnt_distances = pd.DataFrame(
-                columns=[i for i in range(0, self._depth)])
-            self.bp_activation_angles = pd.DataFrame(
-                columns=[i for i in range(0, self._depth)])
-            self.bp_activation_distances = pd.DataFrame(
-                columns=[i for i in range(0, self._depth)])
-            self.gn_activation_angles = pd.DataFrame(
-                columns=[i for i in range(0, self._depth)])
-            self.gn_activation_distances = pd.DataFrame(
-                columns=[i for i in range(0, self._depth)])
-
-            self.reconstruction_loss_init = pd.DataFrame(
-                columns=[i for i in range(0, self._depth)])
-            self.reconstruction_loss = pd.DataFrame(
-                columns=[i for i in range(0, self._depth)])
-
-            self.nullspace_relative_norm = pd.DataFrame(
-                columns=[i for i in range(0, self._depth)])
 
 
 
