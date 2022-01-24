@@ -9,7 +9,7 @@ config = {
 'lr': [0.00025935571806476586, 0.000885500279951265, 0.0001423047695105589, 3.3871035558126015e-06],
 'lr_fb': 0.0045157498494467095,
 'nb_feedback_iterations': [1, 1, 1, 1],
-'sigma': 0.00921040366516759,
+'sigma': [0.00921040366516759,0.00921040366516759,0.00921040366516759,0.00921040366516759],
 'target_stepsize': 0.015962099947441903,
 'dataset': 'cifar10',
 #'out_dir': 'logs/DDTPConv_cifarCIFAR',
@@ -31,7 +31,7 @@ config = {
 'extra_fb_epochs': 1,
 'epochs': 90,
 'double_precision': True,
-'scheduler': False,
+'scheduler': True,
 
 ### Network options ###
 # 'num_hidden': 3,
