@@ -595,7 +595,7 @@ def run():
         else:
             transform = transforms.Compose([
                                transforms.ToTensor(),
-                               transforms.Normalize((0.1307,), (0.3081,))])
+                               transforms.Normalize((0.5,), (0.5,))])
         trainset_total = torchvision.datasets.MNIST(root=data_dir, train=True,
                                               download=True,
                                               transform=transform)
@@ -630,8 +630,15 @@ def run():
             data_dir = '../../../../data'
         else:
             data_dir = './data'
-        transform = transforms.Compose([
-            transforms.ToTensor()])
+
+        if args.no_preprocessing_mnist:
+            transform = transforms.Compose([
+                transforms.ToTensor()])
+        else:
+            transform = transforms.Compose([
+                               transforms.ToTensor(),
+                               transforms.Normalize((0.5,), (0.5,))])
+
         trainset_total = torchvision.datasets.FashionMNIST(root=data_dir,
                                                            train=True,
                                               download=True,
