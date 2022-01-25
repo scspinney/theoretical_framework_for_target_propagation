@@ -300,7 +300,8 @@ class OptimizerList(object):
                         parameters = [net.layers[i].weights, net.layers[i].bias]
                 optimizer_f_params.append({"params": parameters,
                                        "lr": lr,
-                                       "weight_decay": args.forward_wd})
+                                       "weight_decay": args.forward_wd,
+                                       "eps": eps})
 
             if args.optimizer == 'SGD':
                 optimizer_list = [torch.optim.SGD(optimizer_f_params, momentum=args.momentum)]
@@ -308,8 +309,7 @@ class OptimizerList(object):
             elif args.optimizer == 'Adam':
                 optimizer_list = [torch.optim.Adam(
                     optimizer_f_params,
-                    betas=(args.beta1, args.beta2),
-                    eps=eps)]
+                    betas=(args.beta1, args.beta2))]
 
         else:
             raise ValueError('Command line argument lr={} is not recognized '
@@ -932,13 +932,10 @@ def process_lr(lr_str):
             the network.
     Returns: a float or a numpy array of learning rates
     """
-    print(lr_str)
     lr_str = str(lr_str)
     if ',' in lr_str:
-        print("going into str to list")
         return np.array(str_to_list(lr_str, ','))
     else:
-        print("before error")
         return float(lr_str)
 
 def process_nb_feedback_iterations(nb_feedback_iterations_str):

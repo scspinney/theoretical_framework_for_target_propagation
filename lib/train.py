@@ -556,26 +556,26 @@ def train_feedback_parameters(args, net, feedback_optimizer):
     if args.diff_rec_loss:
         if not args.train_randomized_fb:
             for k in range(1, net.depth):
-                n_iter = net.layers[k]._nb_feedback_iterations
+                n_iter = int(net.layers[k]._nb_feedback_iterations)
                 for i in range(n_iter):
                     net.compute_feedback_gradients(k)
                     feedback_optimizer.step()
         else:
             k = np.random.randint(1, net.depth)
-            n_iter = net.layers[k]._nb_feedback_iterations
+            n_iter = int(net.layers[k]._nb_feedback_iterations)
             for i in range(n_iter):
                 net.compute_feedback_gradients(k)
                 feedback_optimizer.step()
     elif args.direct_fb: #is true for ddtp-linear
         if not args.train_randomized_fb: #is true for ddtp-linear
             for k in range(0, net.depth-1):
-                n_iter = net.layers[k]._nb_feedback_iterations
+                n_iter = int(net.layers[k]._nb_feedback_iterations)
                 for i in range(n_iter):
                     net.compute_feedback_gradients(k)
                     feedback_optimizer.step()
         else:
             k = np.random.randint(0, net.depth-1)
-            n_iter = net.layers[k]._nb_feedback_iterations
+            n_iter = int(net.layers[k]._nb_feedback_iterations)
             for i in range(n_iter):
                 net.compute_feedback_gradients(k)
                 feedback_optimizer.step()
