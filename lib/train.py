@@ -213,6 +213,7 @@ def train(args, device, train_loader, net, writer, test_loader, summary,
         else:
             train_var.epoch_accuracy = None
         if args.save_logs:
+
             utils.save_logs(writer, step=e + 1, net=net,
                             loss=train_var.epoch_loss,
                             accuracy=train_var.epoch_accuracy,
