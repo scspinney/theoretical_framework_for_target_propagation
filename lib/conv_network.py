@@ -654,7 +654,7 @@ class DDTPConvNetworkCIFAR(DDTPConvNetwork):
         # NOTE: Our repo's LeNet uses a maxpool with padding of 0, but theirs uses padding of 1!
         # pool_padding = 1
         pool_padding = 0
-        l1 = DDTPConvLayer(1, 32, (5, 5), output_size=10, feature_size=[32, 16, 16] if pool_padding==1 else [32, 15, 15],
+        l1 = DDTPConvLayer(3, 32, (5, 5), output_size=10, feature_size=[32, 16, 16] if pool_padding==1 else [32, 15, 15],
                            stride=1, padding=2, dilation=1, groups=1,
                            bias=bias, padding_mode='zeros',
                            initialization=initialization,
@@ -727,7 +727,6 @@ class DDTPConvNetworkCIFAR(DDTPConvNetwork):
 
             self.nullspace_relative_norm = pd.DataFrame(
                 columns=[i for i in range(0, self._depth)])
-
 
 
 
