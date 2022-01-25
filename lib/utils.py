@@ -630,8 +630,8 @@ def compute_angle(A, B):
         ((F_flat ** 2).sum(1)) * ((G_flat ** 2).sum(1))
     )
     angle_rad = torch.acos(cos_angle).mean()
-    angle = torch.rad2deg(angle_rad)
-    return angle.item()
+    #angle = torch.rad2deg(angle_rad)
+    return angle_rad.item()
 
 def compute_distance(A, B, is_gradient=False):
     """
