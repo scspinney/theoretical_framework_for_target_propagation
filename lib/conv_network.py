@@ -654,7 +654,7 @@ class DDTPConvNetworkCIFAR(DDTPConvNetwork):
         # NOTE: Our repo's LeNet uses a maxpool with padding of 0, but theirs uses padding of 1!
         # pool_padding = 1
         pool_padding = 0
-        l1 = DDTPConvLayer(1, 32, (5, 5), output_size=10, feature_size=[32, 16, 16] if pool_padding==1 else [32, 15, 15],
+        l1 = DDTPConvLayer(1, 32, (5, 5), output_size=10, feature_size=[32, 16, 16] if pool_padding==1 else [32, 13, 13],
                            stride=1, padding=2, dilation=1, groups=1,
                            bias=bias, padding_mode='zeros',
                            initialization=initialization,
@@ -664,7 +664,7 @@ class DDTPConvNetworkCIFAR(DDTPConvNetwork):
                            feedback_activation=feedback_activation,
                            nb_feedback_iterations = nb_feedback_iterations[0])
         l2 = DDTPConvLayer(32, 64, (5, 5), output_size=10,
-                           feature_size=[64, 8, 8] if pool_padding==1 else [64, 7, 7],
+                           feature_size=[64, 8, 8] if pool_padding==1 else [64, 6, 6],
                            stride=1, padding=2, dilation=1, groups=1,
                            bias=bias, padding_mode='zeros',
                            initialization=initialization,
@@ -673,7 +673,7 @@ class DDTPConvNetworkCIFAR(DDTPConvNetwork):
                            forward_activation=hidden_activation,
                            feedback_activation=feedback_activation,
                            nb_feedback_iterations = nb_feedback_iterations[1])
-        l3 = DDTPMLPLayer(in_features=(8 * 8 * 64 if pool_padding == 1 else 7 * 7 * 64),
+        l3 = DDTPMLPLayer(in_features=(8 * 8 * 64 if pool_padding == 1 else 6 * 6 * 64),
                           out_features=512, size_output=10, bias=True,
                           forward_requires_grad=forward_requires_grad,
                           forward_activation=hidden_activation,
