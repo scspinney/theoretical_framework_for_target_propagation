@@ -387,6 +387,21 @@ def save_logs(writer, step, net, loss, accuracy, test_loss, test_accuracy,
 
     """
     net.save_logs(writer, step) #FIXME: Uncomment again. This does not work for DKDTP
+    # compute angle and distance between last layer ff and fb weights
+    forward_weight = net._layers[-1]._weights.T
+    feedback_weight = net._layers[-2]._fb_mlp.layers[0].weight
+    angle = compute_angle(forward_weight, feedback_weight, is_gradient=False)
+    dist = compute_distance(forward_weight, feedback_weight, is_gradient=False)
+
+
+    writer.add_scalar(tag='training_metrics/lastlayer_weight_angle',
+                      scalar_value=angle,
+                      global_step=step)
+
+    writer.add_scalar(tag='training_metrics/lastlayer_weight_dist',
+                      scalar_value=dist,
+                      global_step=step)
+
     writer.add_scalar(tag='training_metrics/loss',
                       scalar_value=loss,
                       global_step=step)
