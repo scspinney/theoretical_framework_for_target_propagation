@@ -300,7 +300,6 @@ class DTPLayer(nn.Module):
         Returns:
             The mini-batch of output activations of the layer.
         """
-
         h = x.mm(self.weights.t())
         if self.bias is not None:
             h += self.bias.unsqueeze(0).expand_as(h)

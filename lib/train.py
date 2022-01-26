@@ -173,7 +173,7 @@ def train(args, device, train_loader, net, writer, test_loader, summary,
         train_var.losses = np.array([])
         train_var.reconstruction_losses = np.array([])
         if not args.train_separate:
-            train_parallel(args, train_var, device, train_loader, net, writer)
+            train_parallel(args, train_var, device, train_loader, net, writer, e)
         else:
             train_separate(args, train_var, device, train_loader, net, writer)
         if not args.freeze_fb_weights:
@@ -342,7 +342,7 @@ def train(args, device, train_loader, net, writer, test_loader, summary,
     return train_var.summary
 
 
-def train_parallel(args, train_var, device, train_loader, net, writer):
+def train_parallel(args, train_var, device, train_loader, net, writer, e):
     """
     Train the given network on the given training dataset with DTP. The forward
     and feedback parameters are trained simultaneously for each batch.
@@ -395,11 +395,11 @@ def train_parallel(args, train_var, device, train_loader, net, writer):
             if loss_rec is not None and args.plots is not None:
                 net.reconstruction_loss.at[train_var.epochs, l] = loss_rec
 
-        if args.save_logs and i % args.log_interval == 0:
+        if args.save_logs and i == len(train_loader)-1:
             if not args.freeze_fb_weights:
                 utils.save_feedback_batch_logs(args, writer,
-                                           train_var.batch_idx, net)
-            utils.save_forward_batch_logs(args, writer, train_var.batch_idx,
+                                           e, net)
+            utils.save_forward_batch_logs(args, writer, e,
                                           net,
                                           train_var.batch_loss, predictions)
             train_var.batch_idx += 1
