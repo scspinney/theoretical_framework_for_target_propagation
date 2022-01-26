@@ -618,53 +618,54 @@ def compute_damped_gn_update(jacobian, output_error, damping):
     return gn_updates
 
 
-# def compute_angle(A, B):
-#     """
-#      Compute the angle between two tensors of the same size. The tensors will
-#      be flattened, after which the angle is computed.
-#     Args:
-#         A (torch.Tensor): First tensor
-#         B (torch.Tensor): Second tensor
-#
-#     Returns: The angle between the two tensors in degrees
-#
-#     """
-#     if contains_nan(A):
-#         print('tensor A contains nans:')
-#         print(A)
-#     if contains_nan(B):
-#         print('tensor B contains nans:')
-#         print(B)
-#
-#     inner_product = torch.sum(A*B)  #equal to inner product of flattened tensors
-#     cosine = inner_product/(torch.norm(A, p='fro')*torch.norm(B, p='fro'))
-#     if contains_nan(cosine):
-#         print('cosine contains nans:')
-#         print('inner product: {}'.format(inner_product))
-#         print('norm A: {}'.format(torch.norm(A, p='fro')))
-#         print('norm B: {}'.format(torch.norm(B, p='fro')))
-#
-#     if cosine > 1 and cosine < 1 + 1e-5:
-#         cosine = torch.Tensor([1.])
-#     angle = 180/np.pi*torch.acos(cosine)
-#     if contains_nan(angle):
-#         print('angle computation causes NANs. cosines:')
-#         print(cosine)
-#     return angle
-
-
 def compute_angle(A, B):
-    F = A
-    G = B
+     """
+      Compute the angle between two tensors of the same size. The tensors will
+      be flattened, after which the angle is computed.
+     Args:
+         A (torch.Tensor): First tensor
+         B (torch.Tensor): Second tensor#
 
-    F_flat = F.flatten(1) if F.ndim > 1 else F.unsqueeze(0)
-    G_flat = G.flatten(1) if G.ndim > 1 else G.unsqueeze(0)
-    cos_angle = ((F_flat * G_flat).sum(1)) / torch.sqrt(
-        ((F_flat ** 2).sum(1)) * ((G_flat ** 2).sum(1))
-    )
-    angle_rad = torch.acos(cos_angle).mean()
-    angle = torch.rad2deg(angle_rad)
-    return angle.item()
+     Returns: The angle between the two tensors in degrees#
+
+     """
+     if contains_nan(A):
+         print('tensor A contains nans:')
+         print(A)
+     if contains_nan(B):
+         print('tensor B contains nans:')
+         print(B)
+
+     inner_product = torch.sum(A*B)  #equal to inner product of flattened tensors
+     cosine = inner_product/(torch.norm(A, p='fro')*torch.norm(B, p='fro'))
+     if contains_nan(cosine):
+         print('cosine contains nans:')
+         print('inner product: {}'.format(inner_product))
+         print('norm A: {}'.format(torch.norm(A, p='fro')))
+         print('norm B: {}'.format(torch.norm(B, p='fro')))#
+
+     if cosine > 1 and cosine < 1 + 1e-5:
+         cosine = torch.Tensor([1.])
+     angle = 180/np.pi*torch.acos(cosine)
+     if contains_nan(angle):
+         print('angle computation causes NANs. cosines:')
+         print(cosine)
+     return angle
+
+
+#def compute_angle(A, B):
+#    F = A
+#    G = B
+#    print(f"Shape of F: {F.shape}")
+#    print(f"Shape of G: {G.shape}")
+#    F_flat = F.flatten(1) if F.ndim > 1 else F.unsqueeze(0)
+#    G_flat = G.flatten(1) if G.ndim > 1 else G.unsqueeze(0)
+#    cos_angle = ((F_flat * G_flat).sum(1)) / torch.sqrt(
+#        ((F_flat ** 2).sum(1)) * ((G_flat ** 2).sum(1))
+#    )
+#    angle_rad = torch.acos(cos_angle).mean()
+#    #angle = torch.rad2deg(angle_rad)
+#    return angle_rad
 
 def compute_distance(A, B, is_gradient=False):
     """

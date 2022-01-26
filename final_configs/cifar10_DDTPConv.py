@@ -31,7 +31,7 @@ config = {
 'extra_fb_epochs': 1,
 'epochs': 90,
 'double_precision': True,
-'scheduler': True,
+'scheduler': False,
 
 ### Network options ###
 # 'num_hidden': 3,
@@ -50,11 +50,11 @@ config = {
 'multiple_hpsearch': False,
 
 ### Logging options ###
-'save_logs': False,
-'save_BP_angle': False,
+'save_logs': True,
+'save_BP_angle': True,
 'save_GN_angle': False,
 'save_GN_activations_angle': False,
-'save_BP_activations_angle': False,
+'save_BP_activations_angle': True,
 'gn_damping': 0.,
 'log_interval': 100,
 }
