@@ -29,8 +29,9 @@ import matplotlib.pyplot as plt
 from tensorboardX import SummaryWriter
 import pandas as pd
 from orion.client import report_objective
-from lib import utils
-from lib.networks import LeeDTPNetwork, DTPNetwork
+# from lib import utils
+from .utils import choose_optimizer, one_hot_to_int, make_plot_output_space, save_logs, save_summary_dict, save_feedback_batch_logs, save_forward_batch_logs, int_to_one_hot
+from .networks import LeeDTPNetwork, DTPNetwork
 import pickle
 
 def train(args, device, train_loader, net, writer, test_loader, summary,
@@ -68,7 +69,7 @@ def train(args, device, train_loader, net, writer, test_loader, summary,
     train_var.summary = summary
 
     train_var.forward_optimizer, train_var.feedback_optimizer = \
-        utils.choose_optimizer(args, net)
+        choose_optimizer(args, net)
 
 
     if args.scheduler:
@@ -150,13 +151,13 @@ def train(args, device, train_loader, net, writer, test_loader, summary,
         inputs, targets = inputs.to(device), targets.to(device)
         if args.classification:
             if args.output_activation == 'sigmoid':
-                targets = utils.int_to_one_hot(targets, 10, device,
+                targets = int_to_one_hot(targets, 10, device,
                                                soft_target=1.)
             else:
-                raise utils.NetworkError("output space plot for classification "
+                raise NetworkError("output space plot for classification "
                                          "tasks is only possible with sigmoid "
                                          "output layer.")
-        utils.make_plot_output_space(args, net,
+        make_plot_output_space(args, net,
                                      args.output_space_plot_layer_idx,
                                      train_var.loss_function,
                                      targets,
@@ -212,7 +213,7 @@ def train(args, device, train_loader, net, writer, test_loader, summary,
         else:
             train_var.epoch_accuracy = None
         if args.save_logs:
-            utils.save_logs(writer, step=e + 1, net=net,
+            save_logs(writer, step=e + 1, net=net,
                             loss=train_var.epoch_loss,
                             accuracy=train_var.epoch_accuracy,
                             test_loss=train_var.test_loss,
@@ -249,7 +250,7 @@ def train(args, device, train_loader, net, writer, test_loader, summary,
                 train_var.val_accuracies = np.append(train_var.val_accuracies,
                                                      train_var.val_accuracy)
 
-        utils.save_summary_dict(args, train_var.summary)
+        save_summary_dict(args, train_var.summary)
 
         if e > 4 and (not args.evaluate):
             # stop unpromising runs
@@ -335,7 +336,7 @@ def train(args, device, train_loader, net, writer, test_loader, summary,
 
             report_objective(float(1-train_var.test_accuracy), name='test_error')
 
-    utils.save_summary_dict(args, train_var.summary)
+    save_summary_dict(args, train_var.summary)
 
 
     print('Training network ... Done')
@@ -369,7 +370,7 @@ def train_parallel(args, train_var, device, train_loader, net, writer):
         predictions = net.forward(inputs)
         if args.classification and args.output_activation == 'sigmoid':
             # convert targets to one hot vectors for MSE loss:
-            targets = utils.int_to_one_hot(targets, 10, device,
+            targets = int_to_one_hot(targets, 10, device,
                                            soft_target=args.soft_target)
 
         train_var.batch_accuracy, train_var.batch_loss = \
@@ -397,9 +398,9 @@ def train_parallel(args, train_var, device, train_loader, net, writer):
 
         if args.save_logs and i % args.log_interval == 0:
             if not args.freeze_fb_weights:
-                utils.save_feedback_batch_logs(args, writer,
+                save_feedback_batch_logs(args, writer,
                                            train_var.batch_idx, net)
-            utils.save_forward_batch_logs(args, writer, train_var.batch_idx,
+            save_forward_batch_logs(args, writer, train_var.batch_idx,
                                           net,
                                           train_var.batch_loss, predictions)
             train_var.batch_idx += 1

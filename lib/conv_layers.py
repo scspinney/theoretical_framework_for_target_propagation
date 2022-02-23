@@ -17,7 +17,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-from lib import utils
+from .utils import contains_nan, compute_average_batch_angle, compute_average_batch_distance
 import warnings
 class DDTPConvLayer(nn.Module):
     """
@@ -31,7 +31,7 @@ class DDTPConvLayer(nn.Module):
                  pool_dilation=1, forward_activation='tanh',
                  feedback_activation='linear',
                  nb_feedback_iterations = 1):
-        nn.Module.__init__(self)
+        super().__init__()
 
         self._conv_layer = nn.Conv2d(in_channels, out_channels, kernel_size,
                                      stride, padding, dilation, groups, bias,
@@ -162,7 +162,7 @@ class DDTPConvLayer(nn.Module):
                 warnings.warn('Input to inverse sigmoid is out of'
                                  'bound: x={}'.format(x))
             inverse_sigmoid = torch.log(x/(1-x))
-            if utils.contains_nan(inverse_sigmoid):
+            if contains_nan(inverse_sigmoid):
                 raise ValueError('inverse sigmoid function outputted a NaN')
             return torch.log(x/(1-x))
         else:
@@ -212,8 +212,8 @@ class DDTPConvLayer(nn.Module):
             grads = torch.autograd.grad(local_loss, self.weights,
                                         retain_graph=forward_requires_grad)
         self._conv_layer.weight.grad = grads[0].detach()
-        self._forward_feedback_distance = utils.compute_average_batch_distance(h_target,self.activations, is_gradient=False)
-        self._forward_feedback_angle = utils.compute_average_batch_angle(h_target,self.activations)
+        self._forward_feedback_distance = compute_average_batch_distance(h_target,self.activations, is_gradient=False)
+        self._forward_feedback_angle = compute_average_batch_angle(h_target,self.activations)
 
     def set_feedback_requires_grad(self, value):
         if not isinstance(value, bool):
@@ -586,7 +586,7 @@ class DDTPConvLayer(nn.Module):
 #                 warnings.warn('Input to inverse sigmoid is out of'
 #                                  'bound: x={}'.format(x))
 #             inverse_sigmoid = torch.log(x/(1-x))
-#             if utils.contains_nan(inverse_sigmoid):
+#             if contains_nan(inverse_sigmoid):
 #                 raise ValueError('inverse sigmoid function outputted a NaN')
 #             return torch.log(x/(1-x))
 #         else:

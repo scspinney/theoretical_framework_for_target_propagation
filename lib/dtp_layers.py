@@ -22,8 +22,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 from tensorboardX import SummaryWriter
-import lib.utils as utils
 import warnings
+from .utils import contains_nan, compute_damped_gn_update, compute_jacobian, nullspace_relative_norm
 
 class DTPLayer(nn.Module):
     """ An abstract base class for a layer of an MLP that will be trained by the
@@ -246,7 +246,7 @@ class DTPLayer(nn.Module):
                 warnings.warn('Input to inverse sigmoid is out of'
                                  'bound: x={}'.format(x))
             inverse_sigmoid = torch.log(x/(1-x))
-            if utils.contains_nan(inverse_sigmoid):
+            if contains_nan(inverse_sigmoid):
                 raise ValueError('inverse sigmoid function outputted a NaN')
             return torch.log(x/(1-x))
         else:
@@ -490,10 +490,10 @@ class DTPLayer(nn.Module):
         output_error = torch.autograd.grad(loss, output_activation,
                                            retain_graph=True)[0].detach()
         parameters = self.get_forward_parameters()
-        jacobian = utils.compute_jacobian(parameters, output_activation,
+        jacobian = compute_jacobian(parameters, output_activation,
                                           retain_graph=retain_graph)
 
-        gn_updates = utils.compute_damped_gn_update(jacobian, output_error,
+        gn_updates = compute_damped_gn_update(jacobian, output_error,
                                                     damping)
 
         if self.bias is not None:
@@ -555,7 +555,7 @@ class DTPLayer(nn.Module):
                 # used for computing the jacobian, as the graph needs to be
                 # reused for the computing the jacobian of the next batch sample
                 retain_graph_flag = True
-            jacobian = utils.compute_jacobian(activations,
+            jacobian = compute_jacobian(activations,
                                               output_activation[batch_idx,
                                               :],
                                             retain_graph=retain_graph_flag)
@@ -566,7 +566,7 @@ class DTPLayer(nn.Module):
             jacobian = jacobian[:, batch_idx*layersize:
                                    (batch_idx+1)*layersize]
 
-            gn_updates = utils.compute_damped_gn_update(jacobian,
+            gn_updates = compute_damped_gn_update(jacobian,
                                                 output_error[batch_idx, :],
                                                         damping)
             activations_updates[batch_idx, :] = gn_updates.view(-1)
@@ -629,11 +629,11 @@ class DTPLayer(nn.Module):
         """ Compute the norm of the components of weights.grad that are in the nullspace
         of the jacobian of the output with respect to weights, relative to the norm of
         weights.grad."""
-        J = utils.compute_jacobian(self.weights, output_activation,
+        J = compute_jacobian(self.weights, output_activation,
                                    structured_tensor=False,
                                    retain_graph=retain_graph)
         weights_update_flat = self.weights.grad.view(-1)
-        relative_norm = utils.nullspace_relative_norm(J, weights_update_flat)
+        relative_norm = nullspace_relative_norm(J, weights_update_flat)
         return relative_norm
 
     def save_logs(self, writer, step, name, no_gradient=False,

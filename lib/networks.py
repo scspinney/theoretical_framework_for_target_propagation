@@ -20,12 +20,9 @@ trained by difference target propagation and its variants
 import torch
 import torch.nn as nn
 import numpy as np
-import warnings
-from lib.dtp_layers import DTPLayer
-from lib.dtpdrl_layers import DTPDRLLayer
-from tensorboardX import SummaryWriter
-import lib.utils as utils
-from lib.utils import NetworkError
+from .dtp_layers import DTPLayer
+from .dtpdrl_layers import DTPDRLLayer
+from .utils import compute_angle
 import pandas as pd
 import torch.nn.functional as F
 
@@ -463,10 +460,10 @@ class DTPNetwork(nn.Module):
             print(torch.norm(gradients[0].detach(), p='fro'))
             print(gradients[0].detach())
 
-        weights_angle = utils.compute_angle(bp_gradients[0].detach(),
+        weights_angle = compute_angle(bp_gradients[0].detach(),
                                             gradients[0])
         if self.layers[i].bias is not None:
-            bias_angle = utils.compute_angle(bp_gradients[1].detach(),
+            bias_angle = compute_angle(bp_gradients[1].detach(),
                                              gradients[1])
             return (weights_angle, bias_angle)
         else:
@@ -495,10 +492,10 @@ class DTPNetwork(nn.Module):
                                                         damping,
                                                         retain_graph)
         gradients =self.layers[i].get_forward_gradients()
-        weights_angle = utils.compute_angle(gn_gradients[0],
+        weights_angle = compute_angle(gn_gradients[0],
                                             gradients[0])
         if self.layers[i].bias is not None:
-            bias_angle = utils.compute_angle(gn_gradients[1],
+            bias_angle = compute_angle(gn_gradients[1],
                                              gradients[1])
             return (weights_angle, bias_angle)
         else:
@@ -604,9 +601,9 @@ class DTPNetwork(nn.Module):
         )
 
         gradients = self.layers[i].get_forward_gradients()
-        weights_angle = utils.compute_angle(gnt_updates[0], gradients[0])
+        weights_angle = compute_angle(gnt_updates[0], gradients[0])
         if self.layers[i].bias is not None:
-            bias_angle = utils.compute_angle(gnt_updates[1], gradients[1])
+            bias_angle = compute_angle(gnt_updates[1], gradients[1])
             return (weights_angle, bias_angle)
         else:
             return (weights_angle, )

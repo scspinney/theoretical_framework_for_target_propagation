@@ -12,8 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from lib import networks, direct_feedback_networks, conv_network
+from . import networks, direct_feedback_networks, conv_network
 import torch
 from torch.utils.data import Dataset
 import numpy as np

@@ -18,16 +18,13 @@ In this python file, the network classes for networks with direct feedback
 connections should be implemented.
 """
 
-from lib.direct_feedback_layers import DDTPRHLLayer, \
-    DDTPMLPLayer, DDTPControlLayer
-from lib.networks import DTPNetwork, DTPDRLNetwork
+from .direct_feedback_layers import DDTPRHLLayer, DDTPMLPLayer, DDTPControlLayer
+from .networks import DTPNetwork, DTPDRLNetwork
 import torch
 import torch.nn as nn
-import numpy as np
-from lib.utils import NetworkError
+from .utils import logit
 import pandas as pd
 import warnings
-from lib import utils
 
 
 
@@ -622,8 +619,7 @@ class DDTPMLPNetwork(DDTPRHLNetwork):
             output_targets = output_targets
 
         elif self.layers[-1].forward_activation == 'sigmoid':
-            output_targets = utils.logit(
-                output_targets)  # apply inverse sigmoid
+            output_targets = logit(output_targets)  # apply inverse sigmoid
 
         else:
             warnings.warn('Forward activation {} not implemented yet.'.format(

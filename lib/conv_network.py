@@ -16,12 +16,12 @@
 import torch
 from torch import nn
 import numpy as np
-from lib.networks import DTPNetwork
-from lib.conv_layers import DDTPConvLayer, DDTPConvControlLayer
-from lib.direct_feedback_layers import DDTPMLPLayer, DDTPControlLayer
-from lib.dtp_layers import DTPLayer
+from .networks import DTPNetwork
+from .conv_layers import DDTPConvLayer, DDTPConvControlLayer
+from .direct_feedback_layers import DDTPMLPLayer, DDTPControlLayer
+from .dtp_layers import DTPLayer
 import torch.nn.functional as F
-from lib import utils
+from .utils import contains_nan, compute_average_batch_distance, compute_angle, compute_distance, compute_average_batch_angle
 import pandas as pd
 
 class DDTPConvNetwork(nn.Module):
@@ -312,10 +312,10 @@ class DDTPConvNetwork(nn.Module):
         bp_gradients = self.layers[i].compute_bp_update(loss,
                                                         retain_graph)
         gradients = self.layers[i].get_forward_gradients()
-        if utils.contains_nan(bp_gradients[0].detach()):
+        if contains_nan(bp_gradients[0].detach()):
             print('bp update contains nan (layer {}):'.format(i))
             # print(bp_gradients[0].detach())
-        if utils.contains_nan(gradients[0].detach()):
+        if contains_nan(gradients[0].detach()):
             print('weight update contains nan (layer {}):'.format(i))
             # print(gradients[0].detach())
         if torch.norm(gradients[0].detach(), p='fro') < 1e-14:
@@ -327,14 +327,14 @@ class DDTPConvNetwork(nn.Module):
             # print(torch.norm(gradients[0].detach(), p='fro'))
             # print(gradients[0].detach())
 
-        weights_angle = utils.compute_angle(bp_gradients[0].detach(),
+        weights_angle = compute_angle(bp_gradients[0].detach(),
                                             gradients[0])
-        weights_distance = utils.compute_distance(bp_gradients[0].detach(),
+        weights_distance = compute_distance(bp_gradients[0].detach(),
                                                   gradients[0], True)
         if self.layers[i].bias is not None:
-            bias_angle = utils.compute_angle(bp_gradients[1].detach(),
+            bias_angle = compute_angle(bp_gradients[1].detach(),
                                              gradients[1])
-            bias_distance = utils.compute_distance(bp_gradients[1].detach(),
+            bias_distance = compute_distance(bp_gradients[1].detach(),
                                                       gradients[1], True)
             return (weights_angle, bias_angle), (weights_distance, bias_distance)
         else:
@@ -366,14 +366,14 @@ class DDTPConvNetwork(nn.Module):
         print(f"Transpose feedback weight shape: {transpose_feedback_weights.shape}")
 
 
-        weights_angle = utils.compute_angle(transpose_feedback_weights,
+        weights_angle = compute_angle(transpose_feedback_weights,
                                             forward_weights)
-        weights_distance = utils.compute_distance(transpose_feedback_weights,
+        weights_distance = compute_distance(transpose_feedback_weights,
                                             forward_weights, False)
         # if self.layers[i].bias is not None:
-        #     bias_angle = utils.compute_angle(bp_gradients[1].detach(),
+        #     bias_angle = compute_angle(bp_gradients[1].detach(),
         #                                      gradients[1])
-        #     bias_distance = utils.compute_distance(bp_gradients[1].detach(),
+        #     bias_distance = compute_distance(bp_gradients[1].detach(),
         #                                               gradients[1], True)
         #     return (weights_angle, bias_angle), (weights_distance, bias_distance)
         # else:
@@ -544,9 +544,9 @@ class DDTPConvNetwork(nn.Module):
             linear=linear
         ).detach()
 
-        angle = utils.compute_average_batch_angle(target_difference.detach(),
+        angle = compute_average_batch_angle(target_difference.detach(),
                                                   bp_updates)
-        distance = utils.compute_average_batch_distance(target_difference.detach(),
+        distance = compute_average_batch_distance(target_difference.detach(),
                                                         bp_updates,True)
 
         return angle, distance
@@ -571,11 +571,11 @@ class DDTPConvNetwork(nn.Module):
         )
 
         gradients = self.layers[i].get_forward_gradients()
-        weights_angle = utils.compute_angle(gnt_updates[0], gradients[0])
-        weights_distance = utils.compute_distance(gnt_updates[0], gradients[0], True)
+        weights_angle = compute_angle(gnt_updates[0], gradients[0])
+        weights_distance = compute_distance(gnt_updates[0], gradients[0], True)
         if self.layers[i].bias is not None:
-            bias_angle = utils.compute_angle(gnt_updates[1], gradients[1])
-            bias_distance = utils.compute_distance(gnt_updates[1], gradients[1], True)
+            bias_angle = compute_angle(gnt_updates[1], gradients[1])
+            bias_distance = compute_distance(gnt_updates[1], gradients[1], True)
             return (weights_angle, bias_angle), (weights_distance, bias_distance)
         else:
             return (weights_angle, ), (weights_distance, )

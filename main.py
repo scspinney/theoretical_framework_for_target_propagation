@@ -34,9 +34,9 @@ import torch
 import torchvision
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
-from lib.train import train, train_bp
-from lib import utils
-from lib import builders
+from .lib.train import train, train_bp
+from .lib import utils
+from .lib import builders
 from tensorboardX import SummaryWriter
 import os.path
 import pickle
